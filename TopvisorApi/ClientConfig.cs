@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TopvisorApi
+namespace Topvisor.Api
 {
     /// <summary>
     /// Конфиг клиента api.

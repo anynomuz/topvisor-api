@@ -7,7 +7,7 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TopvisorApi
+namespace Topvisor.Api
 {
     /// <summary>
     /// Клиент для доступа к Api Топвизора.

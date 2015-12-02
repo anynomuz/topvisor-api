@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using RestSharp.Deserializers;
 
-namespace TopvisorApi
+namespace Topvisor.Api
 {
     using BindingMap = Dictionary<string, PropertyInfo>;
 
@@ -51,7 +51,7 @@ namespace TopvisorApi
         }
 
         /// <summary>
-        /// Возвращает форматированную строку ошибки валидации объкта.
+        /// Возвращает форматированную строку ошибки валидации объекта.
         /// </summary>
         /// <param name="obj">Валидируемый объект.</param>
         /// <param name="key">Ключ валидируемого свойства.</param>

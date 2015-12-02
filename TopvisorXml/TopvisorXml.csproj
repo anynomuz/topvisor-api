@@ -7,8 +7,8 @@
     <ProjectGuid>{EC67A31D-9CCB-44FF-8B10-8D44D124B733}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>TopvisorXml</RootNamespace>
-    <AssemblyName>TopvisorXml</AssemblyName>
+    <RootNamespace>Topvisor.Xml</RootNamespace>
+    <AssemblyName>Topvisor.Xml</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
