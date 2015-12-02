@@ -15,31 +15,28 @@ namespace SyncConsoleApp
         static void Main(string[] args)
         {
             ////var config = new ClientConfig("");
-
             ////var client = new Client(config);
-
             ////var projects = client.GetProjects();
             ////var keywords = client.GetKeywords(396790);
 
-            var project = new XmlProject();
+            var fileName = "project1.xml";
 
-            project.Name = "Name1";
-            project.Comment = "Comment1";
+            var registry = GetTestRegistry();
+            registry.Save(fileName);
+            var reg = XmlRegistry.Load(fileName);
+        }
 
-            var group = new XmlKeywordGroup();
-            group.Name = "Group1";
+        private static XmlRegistry GetTestRegistry()
+        {
+            var project = new XmlProject("Name1", "Comment1");
 
+            var group = new XmlKeywordGroup("Group1");
             project.KeywordGroups.Add(group);
 
-            group.Keywords.Add(new XmlKeyword() { Target = "url1", Phrase = "Phrase1" });
-            group.Keywords.Add(new XmlKeyword() { Target = "url2", Phrase = "Phrase2" });
+            group.Keywords.Add(new XmlKeyword("Phrase1", "url1"));
+            group.Keywords.Add(new XmlKeyword("Phrase2", "url2"));
 
-            var ser = new XmlSerializer(typeof(XmlProject));
-
-            using(var stream = new FileStream("project1.xml", FileMode.CreateNew))
-            {
-                ser.Serialize(stream, project);
-            }
+            return new XmlRegistry(new[] { project });
         }
     }
 }

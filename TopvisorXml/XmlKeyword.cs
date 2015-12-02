@@ -3,14 +3,24 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Serialization;
 
 namespace Topvisor.Xml
 {
-    [Serializable]
     public class XmlKeyword
     {
-        public string Target { get; set; }
+        public XmlKeyword(string phrase, string targetUrl)
+        {
+            Phrase = phrase;
+            TargetUrl = targetUrl;
+        }
+
+        protected XmlKeyword()
+        {
+        }
 
         public string Phrase { get; set; }
+
+        public string TargetUrl { get; set; }
     }
 }
