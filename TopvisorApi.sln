@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TopvisorApi", "TopvisorApi\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SyncConsoleApp", "SyncConsoleApp\SyncConsoleApp.csproj", "{CCD7AA7A-AD53-47E9-AB62-03ADE3D10079}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TopvisorXml", "TopvisorXml\TopvisorXml.csproj", "{EC67A31D-9CCB-44FF-8B10-8D44D124B733}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{CCD7AA7A-AD53-47E9-AB62-03ADE3D10079}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CCD7AA7A-AD53-47E9-AB62-03ADE3D10079}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CCD7AA7A-AD53-47E9-AB62-03ADE3D10079}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EC67A31D-9CCB-44FF-8B10-8D44D124B733}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EC67A31D-9CCB-44FF-8B10-8D44D124B733}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EC67A31D-9CCB-44FF-8B10-8D44D124B733}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EC67A31D-9CCB-44FF-8B10-8D44D124B733}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -11,9 +11,12 @@ namespace SyncConsoleApp
     {
         static void Main(string[] args)
         {
-            var config = new ClientConfig();
+            var config = new ClientConfig("");
 
+            var client = new Client(config);
 
+            var projects = client.GetProjects();
+            var keywords = client.GetKeywords(396790);
         }
     }
 }

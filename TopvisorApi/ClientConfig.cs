@@ -11,17 +11,15 @@ namespace TopvisorApi
     /// </summary>
     public class ClientConfig
     {
-        private const string _apiUrl = "https://api.topvisor.ru/";
+        private const string _apiUrl = "https://api.topvisor.ru";
         private const int _maxRequestPerSecond = 10;
 
-        private readonly _baseUrl;
+        private readonly string _baseUrl;
 
         public ClientConfig(string id)
         {
             Id = id;
             MaxRequestPerSecond = _maxRequestPerSecond; 
-
-            _baseUrl = string.Concat(_apiUrl, "?api_key=", id);
         }
 
         /// <summary>
@@ -36,7 +34,7 @@ namespace TopvisorApi
 
         public string GetBaseUrl()
         {
-            return _baseUrl;
+            return _apiUrl;
         }
     }
 }
