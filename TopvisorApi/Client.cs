@@ -35,21 +35,13 @@ namespace Topvisor.Api
             _requestBuilder = new ApiRequestBuilder(_config.ApiKey);
         }
 
+        #region Управление проектами
+
         public IEnumerable<ApiProject> GetProjects()
         {
             var request = _requestBuilder.GetProjectsRequest();
 
             var res = _client.Execute<List<ApiProject>>(request);
-            return GetValidatedData(res);
-        }
-
-        public IEnumerable<ApiKeyword> GetKeywords(
-            int projectId, bool onlyEnabled, int groupId = -1)
-        {
-            var request = _requestBuilder.GetKeywordsRequest(
-                projectId, onlyEnabled, groupId);
-
-            var res = _client.Execute<List<ApiKeyword>>(request);
             return GetValidatedData(res);
         }
 
@@ -80,13 +72,18 @@ namespace Topvisor.Api
             return res.Data.Result > 0;
         }
 
-        public int AddKeywordGroup(int projectId, string name)
-        {
-            var request = _requestBuilder.GetAddKeywordGroupRequest(projectId, name);
-            var res = _client.Execute<ApiResponse>(request);
+        #endregion
 
-            ThrowIfError(res);
-            return res.Data.Result;
+        #region Управление фразами
+
+        public IEnumerable<ApiKeyword> GetKeywords(
+            int projectId, bool onlyEnabled, int groupId = -1)
+        {
+            var request = _requestBuilder.GetKeywordsRequest(
+                projectId, onlyEnabled, groupId);
+
+            var res = _client.Execute<List<ApiKeyword>>(request);
+            return GetValidatedData(res);
         }
 
         public int AddKeywords(int projectId, int groupId, string[] keywords)
@@ -100,6 +97,31 @@ namespace Topvisor.Api
             return res.Data.Result;
         }
 
+        public int DeleteKeyword(int keywordId)
+        {
+            var request = _requestBuilder.GetDeleteKeywordRequest(keywordId);
+            var res = _client.Execute<ApiResponse>(request);
+
+            ThrowIfError(res);
+            return res.Data.Result;
+        }
+
+        #endregion
+
+        #region Уравление группами
+
+        public int AddKeywordGroup(int projectId, string name, bool enabled = true)
+        {
+            var request = _requestBuilder.GetAddKeywordGroupRequest(
+                projectId, name, enabled);
+
+            var res = _client.Execute<ApiResponse>(request);
+
+            ThrowIfError(res);
+            return res.Data.Result;
+        }
+
+        #endregion
 
         private T GetValidatedData<T>(IRestResponse<T> response)
         {

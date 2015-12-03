@@ -14,15 +14,15 @@ namespace SyncConsoleApp
     {
         static void Main(string[] args)
         {
-            var config = new ClientConfig("768a9f24525eca4b84fe");
+            var reg = GenTestRegistry(10);
+
+            var config = new ClientConfig("");
             var client = new Client(config);
 
             //var projects = client.GetProjects();
             var keywords = client.GetKeywords(396790, true);
-            var id = client.AddKeywordGroup(396790, "Группа №3");
-
+            var id = client.AddKeywordGroup(396790, "Группа №5");
             client.AddKeywords(396790, id, new [] { "word1", "word2" });
-
 
             //var id = client.AddProject("http://ya.ru");
             //client.RemoveProject(id);
@@ -34,17 +34,11 @@ namespace SyncConsoleApp
             ////var reg = XmlRegistry.Load(xmlFile);
         }
 
-        private static XmlRegistry GetTestRegistry()
+        private static XmlRegistry GenTestRegistry(int projectsCount)
         {
-            var project = new XmlProject("Name1", "Comment1");
-
-            var group = new XmlKeywordGroup("Group1");
-            project.KeywordGroups.Add(group);
-
-            group.Keywords.Add(new XmlKeyword("Phrase1", "url1"));
-            group.Keywords.Add(new XmlKeyword("Phrase2", "url2"));
-
-            return new XmlRegistry(new[] { project });
+            var gen = new ProjectGenerator();
+            var projects = gen.CreateProjects(projectsCount, projectsCount);
+            return new XmlRegistry(projects);
         }
     }
 }
