@@ -21,6 +21,9 @@ namespace Topvisor.Api
         [DeserializeAs(Name = "name")]
         public string Name { get; set; }
 
+        [DeserializeAs(Name = "site")]
+        public string Site { get; set; }
+
         [DeserializeAs(Name = "comment")]
         public string Comment { get; set; }
 
@@ -34,6 +37,7 @@ namespace Topvisor.Api
         {
             this.KeyIntAboveZero("id");
             this.KeyStringIsNoEmpty("name");
+            this.KeyStringIsNoEmpty("site");
         }
     }
 }

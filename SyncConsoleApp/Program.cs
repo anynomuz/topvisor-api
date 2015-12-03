@@ -14,16 +14,24 @@ namespace SyncConsoleApp
     {
         static void Main(string[] args)
         {
-            ////var config = new ClientConfig("");
-            ////var client = new Client(config);
-            ////var projects = client.GetProjects();
-            ////var keywords = client.GetKeywords(396790);
+            var config = new ClientConfig("768a9f24525eca4b84fe");
+            var client = new Client(config);
 
-            var fileName = "project1.xml";
+            //var projects = client.GetProjects();
+            var keywords = client.GetKeywords(396790, true);
+            var id = client.AddKeywordGroup(396790, "Группа №3");
 
-            var registry = GetTestRegistry();
-            registry.Save(fileName);
-            var reg = XmlRegistry.Load(fileName);
+            client.AddKeywords(396790, id, new [] { "word1", "word2" });
+
+
+            //var id = client.AddProject("http://ya.ru");
+            //client.RemoveProject(id);
+            //client.DisableProject(id);
+
+            ////var xmlFile = "project1.xml";
+            ////var registry = GetTestRegistry();
+            ////registry.Save(xmlFile);
+            ////var reg = XmlRegistry.Load(xmlFile);
         }
 
         private static XmlRegistry GetTestRegistry()

@@ -24,8 +24,6 @@ namespace Topvisor.Xml
         public string Name { get; set; }
 
         [XmlElement(ElementName="Keyword")]
-        ////[XmlArray("Keyword")]
-        ////[XmlArrayItem("Keyword")]
         public List<XmlKeyword> Keywords { get; set; }
     }
 }

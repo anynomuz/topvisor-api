@@ -18,14 +18,14 @@ namespace Topvisor.Api
 
         public ClientConfig(string id)
         {
-            Id = id;
+            ApiKey = id;
             MaxRequestPerSecond = _maxRequestPerSecond; 
         }
 
         /// <summary>
         /// Ключ клиента.
         /// </summary>
-        public string Id { get; private set; }
+        public string ApiKey { get; private set; }
 
         /// <summary>
         /// Лимит запросов в секунду.

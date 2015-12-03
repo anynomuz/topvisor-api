@@ -47,9 +47,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ApiRequest.cs" />
+    <Compile Include="ApiRequestBuilder.cs" />
     <Compile Include="Client.cs" />
     <Compile Include="ClientConfig.cs" />
-    <Compile Include="ApiMessage.cs" />
+    <Compile Include="ApiResponse.cs" />
     <Compile Include="ApiKeyword.cs" />
     <Compile Include="ApiProject.cs" />
     <Compile Include="IValidable.cs" />

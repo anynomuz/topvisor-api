@@ -8,14 +8,17 @@ using System.Threading.Tasks;
 namespace Topvisor.Api
 {
     /// <summary>
-    /// Сообщение получаемое по Api.
+    /// Ответ получаемый по Api.
     /// </summary>
-    public class ApiMessage
+    public class ApiResponse
     {
-        [DeserializeAs(Name = "message")]
-        public string Message { get; set; }
+        [DeserializeAs(Name = "result")]
+        public int Result { get; set; }
 
         [DeserializeAs(Name = "error")]
         public bool Error { get; set; }
+
+        [DeserializeAs(Name = "message")]
+        public string Message { get; set; }
     }
 }

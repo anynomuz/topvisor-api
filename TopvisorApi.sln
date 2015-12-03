@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.40629.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TopvisorApi", "TopvisorApi\TopvisorApi.csproj", "{D84AA33E-5BA3-43EF-9AF7-D8B22F01E6B4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Topvisor.Api", "TopvisorApi\Topvisor.Api.csproj", "{D84AA33E-5BA3-43EF-9AF7-D8B22F01E6B4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SyncConsoleApp", "SyncConsoleApp\SyncConsoleApp.csproj", "{CCD7AA7A-AD53-47E9-AB62-03ADE3D10079}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TopvisorXml", "TopvisorXml\TopvisorXml.csproj", "{EC67A31D-9CCB-44FF-8B10-8D44D124B733}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Topvisor.Xml", "TopvisorXml\Topvisor.Xml.csproj", "{EC67A31D-9CCB-44FF-8B10-8D44D124B733}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

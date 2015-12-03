@@ -27,7 +27,7 @@ namespace Topvisor.Api
         {
             var value = GetPropertyValue<int>(obj, key);
 
-            if (value > 0)
+            if (value <= 0)
             {
                 var error = GetErrorMessage(obj, key, "Value <= 0");
                 throw new ArgumentException(error);

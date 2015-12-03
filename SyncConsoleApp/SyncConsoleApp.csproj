@@ -48,13 +48,13 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\TopvisorApi\TopvisorApi.csproj">
+    <ProjectReference Include="..\TopvisorApi\Topvisor.Api.csproj">
       <Project>{d84aa33e-5ba3-43ef-9af7-d8b22f01e6b4}</Project>
-      <Name>TopvisorApi</Name>
+      <Name>Topvisor.Api</Name>
     </ProjectReference>
-    <ProjectReference Include="..\TopvisorXml\TopvisorXml.csproj">
+    <ProjectReference Include="..\TopvisorXml\Topvisor.Xml.csproj">
       <Project>{ec67a31d-9ccb-44ff-8b10-8d44d124b733}</Project>
-      <Name>TopvisorXml</Name>
+      <Name>Topvisor.Xml</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
