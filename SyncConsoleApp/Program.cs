@@ -5,24 +5,42 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
+using RestSharp;
 using Topvisor.Api;
 using Topvisor.Xml;
 
 namespace SyncConsoleApp
 {
-    class Program
+    public class Program
     {
+        private const string FileName = "registry.xml";
+
         static void Main(string[] args)
         {
-            var reg = GenTestRegistry(10);
+            if (!File.Exists(FileName))
+            {
+                var newRegistry = GenTestRegistry(10);
+                newRegistry.Save(FileName);
+            }
 
-            var config = new ClientConfig("");
-            var client = new Client(config);
+            var registry = XmlRegistry.Load(FileName);
+
+            //------
+            var config = new ClientConfig("768a9f24525eca4b84fe");
+            var syncClient = new SyncClient(config);
+
+            syncClient.LoadState();
+            syncClient.AddProjects(registry.Projects);
+            syncClient.DeleteProjects(registry.Projects);
+
+            ////merger.AddApiProjects(projects);
+            ////merger.AddApiKeywords(keywords);
+            ////merger.AddXmlProjects(registry.Projects);
 
             //var projects = client.GetProjects();
-            var keywords = client.GetKeywords(396790, true);
-            var id = client.AddKeywordGroup(396790, "Группа №5");
-            client.AddKeywords(396790, id, new [] { "word1", "word2" });
+            ////var keywords = client.GetKeywords(396790, true);
+            ////var id = client.AddKeywordGroup(396790, "Группа №5");
+            ////client.AddKeywords(396790, id, new [] { "word1", "word2" });
 
             //var id = client.AddProject("http://ya.ru");
             //client.RemoveProject(id);

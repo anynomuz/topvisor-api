@@ -10,25 +10,10 @@ namespace Topvisor.Api
     /// <summary>
     /// Фраза получаемая по Api.
     /// </summary>
-    public class ApiKeyword : IValidable
+    public class ApiKeyword : ApiKeywordGroup, IValidable
     {
-        [DeserializeAs(Name = "id")]
-        public int Id { get; set; }
-
         [DeserializeAs(Name = "phrase_id")]
         public int PhraseId { get; set; }
-
-        [DeserializeAs(Name = "project_id")]
-        public int ProjectId { get; set; }
-
-        [DeserializeAs(Name = "group_id")]
-        public int GroupId { get; set; }
-
-        [DeserializeAs(Name = "group_name")]
-        public string GroupName { get; set; }
-
-        [DeserializeAs(Name = "ord")]
-        public int Order { get; set; }
 
         [DeserializeAs(Name = "target")]
         public string Target { get; set; }
@@ -47,7 +32,6 @@ namespace Topvisor.Api
             this.KeyIntAboveZero("group_id");
 
             this.KeyStringIsNoEmpty("group_name");
-            this.KeyStringIsNoEmpty("target");
             this.KeyStringIsNoEmpty("phrase");
         }
     }

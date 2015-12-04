@@ -29,12 +29,12 @@ namespace Topvisor.Xml
 
         public XmlProject CreateProject(int id, int maxPhrasesCount)
         {
-            var proj = new XmlProject("Project" + id);
+            var proj = new XmlProject(string.Format("http://project{0}.com", id));
 
             var group = new XmlKeywordGroup("DefaultGroup");
             proj.KeywordGroups.Add(group);
 
-            var baseWord = string.Format("{0}-{1}-{2}", proj.Name, group.Name, "keyword");
+            var baseWord = string.Format("{0}-{1}-{2}", proj.Site, group.Name, "keyword");
             var words = GetWords(baseWord, _random.Next(maxPhrasesCount));
 
             foreach (var word in words)

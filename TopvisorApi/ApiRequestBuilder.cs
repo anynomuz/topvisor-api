@@ -72,7 +72,7 @@ namespace Topvisor.Api
         #region Фразы
 
         public IRestRequest GetKeywordsRequest(
-            int projectId, bool onlyEnabled, int groupId)
+            int projectId, bool onlyEnabled, int groupId = -1)
         {
             var request = new RestRequest(Method.GET);
             request.AddParameter("api_key", _apiKey);

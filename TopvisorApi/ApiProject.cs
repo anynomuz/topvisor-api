@@ -15,9 +15,6 @@ namespace Topvisor.Api
         [DeserializeAs(Name = "id")]
         public int Id { get; set; }
 
-        [DeserializeAs(Name = "user")]
-        public int UserId { get; set; }
-
         [DeserializeAs(Name = "name")]
         public string Name { get; set; }
 
@@ -26,9 +23,6 @@ namespace Topvisor.Api
 
         [DeserializeAs(Name = "comment")]
         public string Comment { get; set; }
-
-        [DeserializeAs(Name = "date")]
-        public DateTime Date { get; set; }
 
         /// <summary>
         /// Проверить данные объекта.

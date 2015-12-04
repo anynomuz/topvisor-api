@@ -8,13 +8,13 @@ using System.Xml.Serialization;
 
 namespace Topvisor.Xml
 {
-    [DebuggerDisplay("Name = {Name}")]
+    [DebuggerDisplay("Site = {Site}")]
     public class XmlProject
     {
         public XmlProject(string name)
             : this()
         {
-            Name = name;
+            Site = name;
         }
 
         protected XmlProject()
@@ -22,8 +22,8 @@ namespace Topvisor.Xml
             KeywordGroups = new List<XmlKeywordGroup>(); 
         }
 
-        [XmlAttribute(AttributeName="Name")]
-        public string Name { get; set; }
+        [XmlAttribute(AttributeName="Site")]
+        public string Site { get; set; }
 
         [XmlArray("KeywordGroups")]
         [XmlArrayItem("Group")]
