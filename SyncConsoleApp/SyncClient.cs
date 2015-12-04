@@ -22,7 +22,7 @@ namespace SyncConsoleApp
         public SyncClient(ClientConfig config)
         {
             _client = new ApiClient(config);
-            _requestBuilder = new ApiRequestBuilder(config.ApiKey);
+            _requestBuilder = new ApiRequestBuilder();
         }
 
         public void LoadState()

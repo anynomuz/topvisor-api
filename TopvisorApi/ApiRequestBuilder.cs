@@ -11,9 +11,8 @@ namespace Topvisor.Api
     {
         private readonly string _apiKey;
 
-        public ApiRequestBuilder(string apiKey)
+        public ApiRequestBuilder()
         {
-            _apiKey = apiKey;
         }
 
         #region Проекты
@@ -21,8 +20,6 @@ namespace Topvisor.Api
         public IRestRequest GetProjectsRequest()
         {
             var request = new RestRequest(Method.GET);
-
-            request.AddParameter("api_key", _apiKey);
             request.AddParameter("module", "mod_projects");
 
             request.AddParameter("oper", "get");
@@ -33,7 +30,6 @@ namespace Topvisor.Api
         public IRestRequest GetAddProjectRequest(string site)
         {
             var request = new RestRequest(Method.GET);
-            request.AddParameter("api_key", _apiKey);
             request.AddParameter("module", "mod_projects");
 
             request.AddParameter("oper", "add");
@@ -45,7 +41,6 @@ namespace Topvisor.Api
         public IRestRequest GetDeleteProjectRequest(int id)
         {
             var request = new RestRequest(Method.GET);
-            request.AddParameter("api_key", _apiKey);
             request.AddParameter("module", "mod_projects");
 
             request.AddParameter("oper", "del");
@@ -57,7 +52,6 @@ namespace Topvisor.Api
         public IRestRequest GetDisableProjectRequest(int id)
         {
             var request = new RestRequest(Method.GET);
-            request.AddParameter("api_key", _apiKey);
             request.AddParameter("module", "mod_projects");
 
             request.AddParameter("oper", "edit");
@@ -75,7 +69,6 @@ namespace Topvisor.Api
             int projectId, bool onlyEnabled, int groupId = -1)
         {
             var request = new RestRequest(Method.GET);
-            request.AddParameter("api_key", _apiKey);
             request.AddParameter("module", "mod_keywords");
 
             request.AddParameter("oper", "get");
@@ -94,8 +87,6 @@ namespace Topvisor.Api
             int projectId, int groupId, string[] phrases)
         {
             var request = new RestRequest(Method.POST);
-
-            request.AddParameter("api_key", _apiKey, ParameterType.QueryString);
             request.AddParameter("module", "mod_keywords", ParameterType.QueryString);
 
             request.AddParameter("oper", "add", ParameterType.QueryString);
@@ -113,7 +104,6 @@ namespace Topvisor.Api
         public IRestRequest GetUpdateKeywordTargetRequest(int id, string url)
         {
             var request = new RestRequest(Method.GET);
-            request.AddParameter("api_key", _apiKey);
             request.AddParameter("module", "mod_keywords");
 
             request.AddParameter("oper", "edit");
@@ -126,7 +116,6 @@ namespace Topvisor.Api
         public IRestRequest GetDeleteKeywordRequest(int id)
         {
             var request = new RestRequest(Method.GET);
-            request.AddParameter("api_key", _apiKey);
             request.AddParameter("module", "mod_keywords");
 
             request.AddParameter("oper", "del");
@@ -143,7 +132,6 @@ namespace Topvisor.Api
             int projectId, string name, bool enabled)
         {
             var request = new RestRequest(Method.GET);
-            request.AddParameter("api_key", _apiKey);
             request.AddParameter("module", "mod_keywords");
 
             request.AddParameter("oper", "add");

@@ -17,17 +17,10 @@ namespace Topvisor.Api
         public ClientConfig(string apiKey)
         {
             ApiKey = apiKey;
-            _baseUrl = new Uri("https://api.topvisor.ru");
-
             MaxRequestPerSecond = _maxRequestPerSecond;
-        }
 
-        /// <summary>
-        /// Базовый адрес.
-        /// </summary>
-        public Uri BaseUrl
-        {
-            get { return _baseUrl; }
+            var url = string.Concat("https://api.topvisor.ru", "?api_key=", apiKey);
+            _baseUrl = new Uri(url);
         }
 
         /// <summary>
@@ -39,5 +32,13 @@ namespace Topvisor.Api
         /// Лимит запросов в секунду.
         /// </summary>
         public int MaxRequestPerSecond { get; private set; }
+
+        /// <summary>
+        /// Базовый адрес.
+        /// </summary>
+        public Uri GetBaseUrl()
+        {
+            return _baseUrl;
+        }
     }
 }

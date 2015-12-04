@@ -25,7 +25,7 @@ namespace Topvisor.Api
             }
 
             _client = new RestClient();
-            _client.BaseUrl = config.BaseUrl;
+            _client.BaseUrl = config.GetBaseUrl();
 
             _deserailizer = new JsonDeserializer();
         }
