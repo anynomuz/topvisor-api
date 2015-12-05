@@ -19,43 +19,37 @@ namespace SyncConsoleApp
         {
             if (!File.Exists(FileName))
             {
-                var newRegistry = GenTestRegistry(10);
+                var newRegistry = GenTestRegistry(3);
                 newRegistry.Save(FileName);
             }
 
             var registry = XmlRegistry.Load(FileName);
 
+#warning Отвалидировать урлы в проектах и словах
+
             //------
             var config = new ClientConfig("768a9f24525eca4b84fe");
+
+            ////var rb = new ApiRequestBuilder();
+            ////var client = new ApiClient(config);
+
+            ////var request = rb.GetUpdateProjectRequest(399070, true);
+            ////var res = client.ExecQueryBool(request);
+
+            ////return;
+
             var syncClient = new SyncClient(config);
 
-            syncClient.LoadState();
+            syncClient.LoadApiObjects();
             syncClient.AddProjects(registry.Projects);
+            syncClient.UpdateProjects(registry.Projects);
             syncClient.DeleteProjects(registry.Projects);
-
-            ////merger.AddApiProjects(projects);
-            ////merger.AddApiKeywords(keywords);
-            ////merger.AddXmlProjects(registry.Projects);
-
-            //var projects = client.GetProjects();
-            ////var keywords = client.GetKeywords(396790, true);
-            ////var id = client.AddKeywordGroup(396790, "Группа №5");
-            ////client.AddKeywords(396790, id, new [] { "word1", "word2" });
-
-            //var id = client.AddProject("http://ya.ru");
-            //client.RemoveProject(id);
-            //client.DisableProject(id);
-
-            ////var xmlFile = "project1.xml";
-            ////var registry = GetTestRegistry();
-            ////registry.Save(xmlFile);
-            ////var reg = XmlRegistry.Load(xmlFile);
         }
 
         private static XmlRegistry GenTestRegistry(int projectsCount)
         {
             var gen = new ProjectGenerator();
-            var projects = gen.CreateProjects(projectsCount, projectsCount);
+            var projects = gen.CreateProjects(projectsCount, 2 * projectsCount);
             return new XmlRegistry(projects);
         }
     }

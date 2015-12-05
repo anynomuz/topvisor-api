@@ -24,6 +24,9 @@ namespace Topvisor.Api
         [DeserializeAs(Name = "comment")]
         public string Comment { get; set; }
 
+        [DeserializeAs(Name = "on")]
+        public int On { get; set; }
+
         /// <summary>
         /// Проверить данные объекта.
         /// </summary>

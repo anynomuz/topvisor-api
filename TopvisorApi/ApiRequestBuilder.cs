@@ -9,8 +9,6 @@ namespace Topvisor.Api
 {
     public class ApiRequestBuilder
     {
-        private readonly string _apiKey;
-
         public ApiRequestBuilder()
         {
         }
@@ -21,19 +19,19 @@ namespace Topvisor.Api
         {
             var request = new RestRequest(Method.GET);
             request.AddParameter("module", "mod_projects");
-
             request.AddParameter("oper", "get");
 
             return request;
         }
 
-        public IRestRequest GetAddProjectRequest(string site)
+        public IRestRequest GetAddProjectRequest(string site, int on = 0)
         {
             var request = new RestRequest(Method.GET);
             request.AddParameter("module", "mod_projects");
-
             request.AddParameter("oper", "add");
+
             request.AddParameter("post[site]", site);
+            request.AddParameter("post[on]", on);
 
             return request;
         }
@@ -42,21 +40,21 @@ namespace Topvisor.Api
         {
             var request = new RestRequest(Method.GET);
             request.AddParameter("module", "mod_projects");
-
             request.AddParameter("oper", "del");
+
             request.AddParameter("post[id]", id);
 
             return request;
         }
 
-        public IRestRequest GetDisableProjectRequest(int id)
+        public IRestRequest GetUpdateProjectRequest(int id, int on)
         {
             var request = new RestRequest(Method.GET);
             request.AddParameter("module", "mod_projects");
-
             request.AddParameter("oper", "edit");
+
             request.AddParameter("post[id]", id);
-            request.AddParameter("post[on]", -1);
+            request.AddParameter("post[on]", on);
 
             return request;
         }
@@ -129,16 +127,30 @@ namespace Topvisor.Api
         #region Группы
 
         public IRestRequest GetAddKeywordGroupRequest(
-            int projectId, string name, bool enabled)
+            int projectId, string name, bool enabled = true)
         {
             var request = new RestRequest(Method.GET);
             request.AddParameter("module", "mod_keywords");
-
             request.AddParameter("oper", "add");
-            request.AddParameter("method", "group");
 
+            request.AddParameter("method", "group");
             request.AddParameter("post[project_id]", projectId);
             request.AddParameter("post[name]", name);
+            request.AddParameter("post[on]", enabled);
+
+            return request;
+        }
+
+        public IRestRequest GetUpdateKeywordGroupRequest(
+            int projectId, bool enabled)
+        {
+            var request = new RestRequest(Method.GET);
+            request.AddParameter("module", "mod_keywords");
+            request.AddParameter("oper", "edit");
+
+#warning Не знаю работает ли это
+            request.AddParameter("method", "group");
+            request.AddParameter("post[project_id]", projectId);
             request.AddParameter("post[on]", enabled);
 
             return request;

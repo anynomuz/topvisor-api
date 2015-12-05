@@ -25,8 +25,10 @@ namespace SyncConsoleApp
             _requestBuilder = new ApiRequestBuilder();
         }
 
-        public void LoadState()
+        public void LoadApiObjects()
         {
+#warning Как обрабатывать дубли проектов?
+
             var getProjects = _requestBuilder.GetProjectsRequest();
             var projects = _client.GetObjects<ApiProject>(getProjects);
 
@@ -50,11 +52,11 @@ namespace SyncConsoleApp
                 p => new ApiProject() { Id = -1, Site = p.Site })
                 .ToList();
 
-            // создаем новые проекты
+            // создаем новые проекты, нужны их Id чтобы дальше добавлять фразы
             foreach (var proj in newProjects)
             {
                 var request = _requestBuilder.GetAddProjectRequest(proj.Site);
-                proj.Id = _client.ExecIdQuery(request);
+                proj.Id = _client.ExecQueryId(request);
 
                 _apiProjects.Add(proj);
             }
@@ -72,12 +74,10 @@ namespace SyncConsoleApp
                 projects, _apiProjects, p => GetSiteKey(p.Site), p => GetSiteKey(p.Site))
                 .ToList();
 
-#warning Удалять или отключать проекты?
-
             foreach (var proj in dropProjects)
             {
                 var request = _requestBuilder.GetDeleteProjectRequest(proj.Id);
-                proj.Id = _client.ExecIdQuery(request);
+                proj.Id = _client.ExecQueryId(request);
 
                 _apiProjects.Remove(proj);
             }
@@ -85,19 +85,98 @@ namespace SyncConsoleApp
 
         public void UpdateProjects(IEnumerable<XmlProject> projects)
         {
-            ////projects.Where(p => GetSiteKey(p.Site)
+            var updateMap = projects.Join(
+                    _apiProjects,
+                    p => GetSiteKey(p.Site),
+                    p => GetSiteKey(p.Site),
+                    (x, a) => new Tuple<XmlProject, ApiProject>(x, a))
+                .ToList();
+
+            foreach (var pair in updateMap)
+            {
+                UpdateProject(pair.Item1, pair.Item2);
+            }
         }
 
         private void UpdateProject(XmlProject xmlProject, ApiProject apiProject)
         {
-            // синхронизировать группы
+            // включить или выключить (перенести в архив) проект
+            var stateOn = (xmlProject.Enabled) ? 0 : -1;
 
+            if (stateOn != apiProject.On)
+            {
+                var request = _requestBuilder.GetUpdateProjectRequest(
+                    apiProject.Id, stateOn);
+
+                _client.ExecQueryBool(request);
+                apiProject.On = stateOn;
+            }
+
+            // синхронизировать группы
+            var apiGroups = _apiKeywords.Where(w => w.ProjectId == apiProject.Id)
+                .GroupBy(g => g.GroupName)
+                .Select(group => (ApiKeywordGroup)group.First())
+                .ToList();
+
+            UpdateGroups(apiProject, xmlProject.KeywordGroups, apiGroups);
+        }
+
+        private void UpdateGroups(
+            ApiProject project,
+            IEnumerable<XmlKeywordGroup> xmlGroups,
+            IEnumerable<ApiKeywordGroup> apiGroups)
+        {
+            var createGroups = GetItemsForCreate(
+                xmlGroups,
+                apiGroups,
+                g => g.Name.Trim().ToUpper(),
+                g => g.GroupName.Trim().ToUpper());
+
+            foreach (var xmlGroup in createGroups)
+            {
+                var request = _requestBuilder.GetAddKeywordGroupRequest(
+                    project.Id, xmlGroup.Name);
+
+                var groupId = _client.ExecQueryId(request);
+
+                var apiGroup = new ApiKeywordGroup();
+                apiGroup.ProjectId = project.Id;
+                apiGroup.GroupId = groupId;
+                apiGroup.GroupName = xmlGroup.Name;
+
+                UpdateGroup(xmlGroup, apiGroup);
+            }
+
+            var dropGroups = GetItemsForDelete(
+                xmlGroups,
+                apiGroups,
+                g => g.Name.Trim().ToUpper(),
+                g => g.GroupName.Trim().ToUpper());
+
+#warning Группы удалять или выключать?
+
+            foreach (var group in dropGroups)
+            {
+                var request = _requestBuilder.GetUpdateKeywordGroupRequest(
+                    project.Id, false);
+
+                var res = _client.ExecQueryBool(request);
+            }
+        }
+
+
+        private void UpdateGroup(XmlKeywordGroup xmlGroup, ApiKeywordGroup apiGroup)
+        {
             // синхронизировать фразы
+
+
+
         }
 
         private static string GetSiteKey(string site)
         {
-            return site.Trim().ToUpper();
+            return site.Trim().TrimEnd('/', '.').ToUpper()
+                .Replace("HTTP://", "").Replace("HTTPS://", "");
         }
 
         private static IEnumerable<T1> GetItemsForCreate<T1, T2, K>(
@@ -106,7 +185,7 @@ namespace SyncConsoleApp
             Func<T1, K> newKeySelector,
             Func<T2, K> oldKeySelector)
         {
-            return GetLeftItemsSubRigthItems(
+            return SubtractSets(
                 newItems, oldItems, newKeySelector, oldKeySelector);
         }
 
@@ -116,11 +195,22 @@ namespace SyncConsoleApp
             Func<T1, K> newKeySelector,
             Func<T2, K> oldKeySelector)
         {
-            return GetLeftItemsSubRigthItems(
+            return SubtractSets(
                 oldItems, newItems, oldKeySelector, newKeySelector);
         }
 
-        private static IEnumerable<T1> GetLeftItemsSubRigthItems<T1, T2, K>(
+        /// <summary>
+        /// Вычитает из левого множества правое множество.
+        /// </summary>
+        /// <typeparam name="T1">Тип левого множества.</typeparam>
+        /// <typeparam name="T2">Тип правого множества.</typeparam>
+        /// <typeparam name="K">Тип ключа множеств.</typeparam>
+        /// <param name="leftItems">Левое множество.</param>
+        /// <param name="rigthItems">Правое множество.</param>
+        /// <param name="leftKeySelector">Селектор ключа левого множества.</param>
+        /// <param name="rigthKeySelector">Селектор ключа правого множества.</param>
+        /// <returns>Разность множеств.</returns>
+        private static IEnumerable<T1> SubtractSets<T1, T2, K>(
             IEnumerable<T1> leftItems,
             IEnumerable<T2> rigthItems,
             Func<T1, K> leftKeySelector,

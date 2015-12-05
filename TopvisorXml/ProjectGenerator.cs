@@ -31,15 +31,20 @@ namespace Topvisor.Xml
         {
             var proj = new XmlProject(string.Format("http://project{0}.com", id));
 
-            var group = new XmlKeywordGroup("DefaultGroup");
+            var group = new XmlKeywordGroup("defaultGroup");
             proj.KeywordGroups.Add(group);
 
-            var baseWord = string.Format("{0}-{1}-{2}", proj.Site, group.Name, "keyword");
+            var baseWord = string.Format("proj{0}-{1}-{2}", id, group.Name, "keyword");
             var words = GetWords(baseWord, _random.Next(maxPhrasesCount));
 
             foreach (var word in words)
             {
-                group.Keywords.Add(new XmlKeyword(word, string.Empty));
+                var url = (_random.Next(3) == 0)
+                    ? string.Format("{0}/{1}", proj.Site, word)
+                    : string.Empty;
+
+                var xmlKeyword = new XmlKeyword(word, url);
+                group.Keywords.Add(xmlKeyword);
             }
 
             return proj;

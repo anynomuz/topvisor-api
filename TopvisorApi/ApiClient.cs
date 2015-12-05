@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Topvisor.Api
@@ -16,6 +17,11 @@ namespace Topvisor.Api
     {
         private readonly IRestClient _client;
         private readonly IDeserializer _deserailizer;
+        private readonly int _maxRequestPerSecond;
+
+        private int _totalRequestCounter = 0;
+
+        private DateTime _lastLimitBoundTime = DateTime.Now;
 
         public ApiClient(ClientConfig config)
         {
@@ -27,11 +33,14 @@ namespace Topvisor.Api
             _client = new RestClient();
             _client.BaseUrl = config.GetBaseUrl();
 
+            _maxRequestPerSecond = config.MaxRequestPerSecond;
+
             _deserailizer = new JsonDeserializer();
         }
 
         public IEnumerable<T> GetObjects<T>(IRestRequest request)
         {
+            WaitLimitsBeforeRequest();
             var response = _client.Execute<List<T>>(request);
 
             ThrowIfError(response);
@@ -52,18 +61,39 @@ namespace Topvisor.Api
             return response.Data;
         }
 
-        public int ExecIdQuery(IRestRequest request)
+        public int ExecQueryId(IRestRequest request)
         {
+            WaitLimitsBeforeRequest();
             var response = _client.Execute<ApiResponse>(request);
+
             ThrowIfError(response);
             return response.Data.Result;
         }
 
-        public bool ExecBoolQuery(IRestRequest request)
+        public bool ExecQueryBool(IRestRequest request)
         {
+            WaitLimitsBeforeRequest();
             var response = _client.Execute<ApiResponse>(request);
+
             ThrowIfError(response);
             return response.Data.Result > 0;
+        }
+
+        private void WaitLimitsBeforeRequest()
+        {
+            ++_totalRequestCounter;
+
+            if ((_totalRequestCounter % _maxRequestPerSecond) == 0)
+            {
+                var diff = DateTime.Now - _lastLimitBoundTime;
+
+                if (diff.TotalMilliseconds < 1000)
+                {
+                    Thread.Sleep((int)diff.TotalMilliseconds);
+                }
+
+                _lastLimitBoundTime = DateTime.Now;
+            }
         }
 
         private ApiResponse TryGetResponse<T>(IRestResponse<T> response)
