@@ -12,14 +12,17 @@ namespace Topvisor.Api
     /// </summary>
     public class ApiKeyword : ApiKeywordGroup, IValidable
     {
+        [DeserializeAs(Name = "id")]
+        public int Id { get; set; }
+
         [DeserializeAs(Name = "phrase_id")]
         public int PhraseId { get; set; }
 
-        [DeserializeAs(Name = "target")]
-        public string Target { get; set; }
-
         [DeserializeAs(Name = "phrase")]
         public string Phrase { get; set; }
+
+        [DeserializeAs(Name = "target")]
+        public string Target { get; set; }
 
         /// <summary>
         /// Проверить данные объекта.

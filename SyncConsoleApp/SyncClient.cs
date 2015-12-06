@@ -85,14 +85,13 @@ namespace SyncConsoleApp
 
         public void UpdateProjects(IEnumerable<XmlProject> projects)
         {
-            var updateMap = projects.Join(
-                    _apiProjects,
-                    p => GetSiteKey(p.Site),
-                    p => GetSiteKey(p.Site),
-                    (x, a) => new Tuple<XmlProject, ApiProject>(x, a))
-                .ToList();
+            var updateProjects = projects.Join(
+                _apiProjects,
+                p => GetSiteKey(p.Site),
+                p => GetSiteKey(p.Site),
+                (x, a) => new Tuple<XmlProject, ApiProject>(x, a));
 
-            foreach (var pair in updateMap)
+            foreach (var pair in updateProjects)
             {
                 UpdateProject(pair.Item1, pair.Item2);
             }
@@ -126,6 +125,7 @@ namespace SyncConsoleApp
             IEnumerable<XmlKeywordGroup> xmlGroups,
             IEnumerable<ApiKeywordGroup> apiGroups)
         {
+            // создать группы
             var createGroups = GetItemsForCreate(
                 xmlGroups,
                 apiGroups,
@@ -139,38 +139,86 @@ namespace SyncConsoleApp
 
                 var groupId = _client.ExecQueryId(request);
 
-                var apiGroup = new ApiKeywordGroup();
-                apiGroup.ProjectId = project.Id;
-                apiGroup.GroupId = groupId;
-                apiGroup.GroupName = xmlGroup.Name;
+                var apiGroup = new ApiKeywordGroup()
+                    {
+                        ProjectId = project.Id,
+                        GroupId = groupId,
+                        GroupName = xmlGroup.Name,
+                        On = 1
+                    };
 
                 UpdateGroup(xmlGroup, apiGroup);
             }
 
+            // удалить группы
             var dropGroups = GetItemsForDelete(
                 xmlGroups,
                 apiGroups,
                 g => g.Name.Trim().ToUpper(),
                 g => g.GroupName.Trim().ToUpper());
 
-#warning Группы удалять или выключать?
-
             foreach (var group in dropGroups)
             {
-                var request = _requestBuilder.GetUpdateKeywordGroupRequest(
-                    project.Id, false);
+                var request = _requestBuilder.GetDeleteKeywordGroupRequest(
+                    project.Id, group.GroupId);
 
-                var res = _client.ExecQueryBool(request);
+                _client.ExecQueryBool(request);
+            }
+
+            // обновить группы
+            var updateGroups = xmlGroups.Join(
+                apiGroups,
+                g => g.Name.Trim().ToUpper(),
+                g => g.GroupName.Trim().ToUpper(),
+                (x, a) => new Tuple<XmlKeywordGroup, ApiKeywordGroup>(x, a));
+
+            foreach (var pair in updateGroups)
+            {
+                UpdateGroup(pair.Item1, pair.Item2);
             }
         }
 
-
         private void UpdateGroup(XmlKeywordGroup xmlGroup, ApiKeywordGroup apiGroup)
         {
-            // синхронизировать фразы
+            // включить / выключить группы
+            var stateOn = (xmlGroup.Enabled) ? 1 : 0;
 
+            if (stateOn != apiGroup.On)
+            {
+                var request = _requestBuilder.GetUpdateKeywordGroupRequest(
+                    apiGroup.ProjectId, apiGroup.GroupId, stateOn);
 
+                _client.ExecQueryBool(request);
+                apiGroup.On = stateOn;
+            }
 
+            var apiKeywords = _apiKeywords.Where(
+                w => (w.ProjectId == apiGroup.ProjectId) && (w.GroupId == apiGroup.GroupId))
+                .ToList();
+
+            // добавить фразы
+            var createWords = GetItemsForCreate(
+                xmlGroup.Keywords, apiKeywords, w => w.Phrase, w => w.Phrase);
+
+            var addKeywords = createWords
+                .Where(p => !string.IsNullOrEmpty(p.Phrase)).Select(p => p.Phrase);
+
+            var addRequest = _requestBuilder.GetAddKeywordsRequest(
+                apiGroup.ProjectId, apiGroup.GroupId, addKeywords);
+
+            _client.ExecQueryValue<List<int>>(addRequest);
+
+            // TODO: Установить target страницу
+
+            // удалить фразы
+            var dropWords = GetItemsForDelete(
+                xmlGroup.Keywords, apiKeywords, w => w.Phrase, w => w.Phrase);
+
+            foreach (var word in dropWords)
+            {
+                var dropRequest = _requestBuilder.GetDeleteKeywordRequest(word.Id);
+                _client.ExecQueryBool(dropRequest);
+            }
         }
 
         private static string GetSiteKey(string site)

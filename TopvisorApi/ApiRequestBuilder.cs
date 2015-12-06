@@ -71,7 +71,7 @@ namespace Topvisor.Api
 
             request.AddParameter("oper", "get");
             request.AddParameter("post[project_id]", projectId);
-            request.AddParameter("post[only_enabled]", onlyEnabled);
+            request.AddParameter("post[only_enabled]", onlyEnabled ? 1 : 0);
 
             if (groupId > 0)
             {
@@ -82,7 +82,7 @@ namespace Topvisor.Api
         }
 
         public IRestRequest GetAddKeywordsRequest(
-            int projectId, int groupId, string[] phrases)
+            int projectId, int groupId, IEnumerable<string> phrases)
         {
             var request = new RestRequest(Method.POST);
             request.AddParameter("module", "mod_keywords", ParameterType.QueryString);
@@ -136,22 +136,36 @@ namespace Topvisor.Api
             request.AddParameter("method", "group");
             request.AddParameter("post[project_id]", projectId);
             request.AddParameter("post[name]", name);
-            request.AddParameter("post[on]", enabled);
+            request.AddParameter("post[on]", enabled ? 1 : 0);
+
+            return request;
+        }
+
+        public IRestRequest GetDeleteKeywordGroupRequest(
+            int projectId, int groupId)
+        {
+            var request = new RestRequest(Method.GET);
+            request.AddParameter("module", "mod_keywords");
+            request.AddParameter("oper", "del");
+
+            request.AddParameter("method", "group");
+            request.AddParameter("post[project_id]", projectId);
+            request.AddParameter("post[id]", groupId);
 
             return request;
         }
 
         public IRestRequest GetUpdateKeywordGroupRequest(
-            int projectId, bool enabled)
+            int projectId, int groupId, int on)
         {
             var request = new RestRequest(Method.GET);
             request.AddParameter("module", "mod_keywords");
             request.AddParameter("oper", "edit");
 
-#warning Не знаю работает ли это
             request.AddParameter("method", "group");
             request.AddParameter("post[project_id]", projectId);
-            request.AddParameter("post[on]", enabled);
+            request.AddParameter("post[id]", groupId);
+            request.AddParameter("post[on]", on);
 
             return request;
         }

@@ -50,6 +50,7 @@
     <Compile Include="ApiKeywordGroup.cs" />
     <Compile Include="ApiRequestBuilder.cs" />
     <Compile Include="ApiClient.cs" />
+    <Compile Include="ApiResponseResult.cs" />
     <Compile Include="ClientConfig.cs" />
     <Compile Include="ApiResponse.cs" />
     <Compile Include="ApiKeyword.cs" />

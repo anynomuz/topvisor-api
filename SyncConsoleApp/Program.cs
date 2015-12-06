@@ -49,7 +49,7 @@ namespace SyncConsoleApp
         private static XmlRegistry GenTestRegistry(int projectsCount)
         {
             var gen = new ProjectGenerator();
-            var projects = gen.CreateProjects(projectsCount, 2 * projectsCount);
+            var projects = gen.CreateProjects(projectsCount, 10);
             return new XmlRegistry(projects);
         }
     }

@@ -12,8 +12,6 @@ namespace Topvisor.Api
     /// </summary>
     public class ApiResponse
     {
-        [DeserializeAs(Name = "result")]
-        public int Result { get; set; }
 
         [DeserializeAs(Name = "error")]
         public bool Error { get; set; }

@@ -11,10 +11,11 @@ namespace Topvisor.Xml
     [DebuggerDisplay("Name = {Name}")]
     public class XmlKeywordGroup
     {
-        public XmlKeywordGroup(string name)
+        public XmlKeywordGroup(string name, bool enabled = true)
             : this()
         {
             Name = name;
+            Enabled = enabled;
         }
 
         protected XmlKeywordGroup()
@@ -24,6 +25,9 @@ namespace Topvisor.Xml
 
         [XmlAttribute(AttributeName="Name")]
         public string Name { get; set; }
+
+        [XmlAttribute(AttributeName = "Enabled")]
+        public bool Enabled { get; set; }
 
         [XmlElement(ElementName="Keyword")]
         public List<XmlKeyword> Keywords { get; set; }

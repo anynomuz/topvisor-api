@@ -61,22 +61,23 @@ namespace Topvisor.Api
             return response.Data;
         }
 
-        public int ExecQueryId(IRestRequest request)
+        public T ExecQueryValue<T>(IRestRequest request)
         {
             WaitLimitsBeforeRequest();
-            var response = _client.Execute<ApiResponse>(request);
+            var response = _client.Execute<ApiResponseResult<T>>(request);
 
             ThrowIfError(response);
             return response.Data.Result;
         }
 
+        public int ExecQueryId(IRestRequest request)
+        {
+            return ExecQueryValue<int>(request);
+        }
+
         public bool ExecQueryBool(IRestRequest request)
         {
-            WaitLimitsBeforeRequest();
-            var response = _client.Execute<ApiResponse>(request);
-
-            ThrowIfError(response);
-            return response.Data.Result > 0;
+            return ExecQueryValue<int>(request) > 0;
         }
 
         private void WaitLimitsBeforeRequest()
