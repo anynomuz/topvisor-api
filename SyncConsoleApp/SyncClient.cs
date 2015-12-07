@@ -19,8 +19,9 @@ namespace SyncConsoleApp
         private readonly List<ApiKeyword> _apiKeywords =
             new List<ApiKeyword>();
 
-        private readonly List<int> _enabledGroupsId =
-            new List<int>();
+        private readonly List<SyncKeywordGroup> _apiGroups =
+            new List<SyncKeywordGroup>();
+
 
         public SyncClient(ClientConfig config)
         {
@@ -44,13 +45,18 @@ namespace SyncConsoleApp
             _apiKeywords.AddRange(keywords);
 
             // не удалось найти признак вкл/выкл у группы, поэтому
-            // таким образом собираем id'шники включеных групп,
+            // дополнительным запросом собираем id'шники включеных групп
             var enabledKeywords = projects
                 .Select(p => _requestBuilder.GetKeywordsRequest(p.Id, true))
                 .SelectMany(p => _client.GetObjects<ApiKeyword>(p).Select(k => k.GroupId))
                 .Distinct();
 
-            _enabledGroupsId.AddRange(enabledKeywords);
+            var groups = _apiKeywords
+                .GroupBy(k => k.GroupId)
+                .SelectMany(g => g)
+                .Select(k => new SyncKeywordGroup(k, enabledKeywords.Contains(k.GroupId)));
+
+            _apiGroups.AddRange(groups);
         }
 
         public void AddProjects(IEnumerable<XmlProject> projects)
@@ -123,9 +129,7 @@ namespace SyncConsoleApp
             }
 
             // синхронизировать группы
-            var apiGroups = _apiKeywords.Where(w => w.ProjectId == apiProject.Id)
-                .GroupBy(g => g.GroupName)
-                .Select(group => (ApiKeywordGroup)group.First())
+            var apiGroups = _apiGroups.Where(w => w.ProjectId == apiProject.Id)
                 .ToList();
 
             UpdateGroups(apiProject, xmlProject.KeywordGroups, apiGroups);
@@ -134,7 +138,7 @@ namespace SyncConsoleApp
         private void UpdateGroups(
             ApiProject project,
             IEnumerable<XmlKeywordGroup> xmlGroups,
-            IEnumerable<ApiKeywordGroup> apiGroups)
+            IEnumerable<SyncKeywordGroup> apiGroups)
         {
             // создать группы
             var createGroups = GetItemsForCreate(
@@ -146,18 +150,14 @@ namespace SyncConsoleApp
             foreach (var xmlGroup in createGroups)
             {
                 var request = _requestBuilder.GetAddKeywordGroupRequest(
-                    project.Id, xmlGroup.Name);
+                    project.Id, xmlGroup.Name, true);
 
                 var groupId = _client.GetIdResponse(request);
 
-                var apiGroup = new ApiKeywordGroup()
-                    {
-                        ProjectId = project.Id,
-                        GroupId = groupId,
-                        GroupName = xmlGroup.Name,
-                    };
+                var apiGroup = new SyncKeywordGroup(
+                    project.Id, groupId, xmlGroup.Name, true);
 
-                _enabledGroupsId.Add(groupId);
+                _apiGroups.Add(apiGroup);
 
                 UpdateGroup(xmlGroup, apiGroup);
             }
@@ -175,7 +175,7 @@ namespace SyncConsoleApp
                     project.Id, group.GroupId);
 
                 _client.GetBoolResponse(request);
-                _enabledGroupsId.Remove(group.GroupId);
+                _apiGroups.Remove(group);
             }
 
             // обновить группы
@@ -183,7 +183,7 @@ namespace SyncConsoleApp
                 apiGroups,
                 g => GetGroupNameKey(g.Name),
                 g => GetGroupNameKey(g.GroupName),
-                (x, a) => new Tuple<XmlKeywordGroup, ApiKeywordGroup>(x, a));
+                (x, a) => new Tuple<XmlKeywordGroup, SyncKeywordGroup>(x, a));
 
             foreach (var pair in updateGroups)
             {
@@ -191,26 +191,16 @@ namespace SyncConsoleApp
             }
         }
 
-        private void UpdateGroup(XmlKeywordGroup xmlGroup, ApiKeywordGroup apiGroup)
+        private void UpdateGroup(XmlKeywordGroup xmlGroup, SyncKeywordGroup apiGroup)
         {
-            var apiGroupEnabled = _enabledGroupsId.Contains(apiGroup.GroupId);
-
             // включить / выключить группы
-            if (apiGroupEnabled != xmlGroup.Enabled)
+            if (apiGroup.Enabled != xmlGroup.Enabled)
             {
                 var request = _requestBuilder.GetUpdateKeywordGroupRequest(
                     apiGroup.ProjectId, apiGroup.GroupId, xmlGroup.Enabled);
 
                 _client.GetBoolResponse(request);
-
-                if (xmlGroup.Enabled)
-                {
-                    _enabledGroupsId.Add(apiGroup.GroupId);
-                }
-                else
-                {
-                    _enabledGroupsId.Remove(apiGroup.GroupId);
-                }
+                apiGroup.Enabled = xmlGroup.Enabled;
             }
 
             var apiKeywords = _apiKeywords.Where(
@@ -251,6 +241,19 @@ namespace SyncConsoleApp
         private static string GetGroupNameKey(string groupName)
         {
             return groupName.Trim().ToUpper();
+        }
+
+        private static IEnumerable<Tuple<T1, T2>> GetItemsForUpdate<T1, T2, K>(
+            IEnumerable<T1> newItems,
+            IEnumerable<T2> oldItems,
+            Func<T1, K> newKeySelector,
+            Func<T2, K> oldKeySelector)
+        {
+            return newItems.Join(
+                oldItems,
+                t1 => newKeySelector(t1),
+                t2 => oldKeySelector(t2),
+                (t1, t2) => new Tuple<T1, T2>(t1, t2));
         }
 
         private static IEnumerable<T1> GetItemsForCreate<T1, T2, K>(
