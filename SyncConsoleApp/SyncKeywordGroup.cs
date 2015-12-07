@@ -44,5 +44,20 @@ namespace SyncConsoleApp
         public bool Enabled { get; set; }
 
         public List<ApiKeyword> Keywords { get; private set; }
+
+        public ApiKeyword AddKeyword(string phrase)
+        {
+            var keyword = new ApiKeyword()
+                {
+                    Id = -1,
+                    ProjectId = this.ProjectId,
+                    GroupId = this.Id,
+                    GroupName = this.GroupName,
+                    Phrase = phrase,
+                };
+
+            Keywords.Add(keyword);
+            return keyword;
+        }
     }
 }

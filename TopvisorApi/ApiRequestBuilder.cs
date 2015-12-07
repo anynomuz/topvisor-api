@@ -85,6 +85,21 @@ namespace Topvisor.Api
             return request;
         }
 
+        public IRestRequest GetAddKeywordRequest(
+            int projectId, int groupId, string phrase)
+        {
+            var request = new RestRequest(Method.GET);
+            request.AddParameter("module", "mod_keywords");
+
+            request.AddParameter("oper", "add");
+            request.AddParameter("post[project_id]", projectId);
+            request.AddParameter("post[group_id]", groupId);
+
+            request.AddParameter("post[phrase]", phrase);
+
+            return request;
+        }
+
         public IRestRequest GetAddKeywordsRequest(
             int projectId, int groupId, IEnumerable<string> phrases)
         {

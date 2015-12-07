@@ -49,18 +49,13 @@ namespace SyncConsoleApp
             ////syncClient.UpdateProjects(registry.Projects);
             ////syncClient.DeleteProjects(registry.Projects);
 
-            var syncClient = new SyncClient2(config);
-            syncClient.LoadApiObjects(client);
+            var syncClient = new SyncClient(config);
+            syncClient.LoadApiObjects();
 
-            var list = new List<SyncRequest>();
+            syncClient.SyncProjects(registry.Projects);
+            syncClient.SyncGroups(registry.Projects);
+            syncClient.SyncKeywords(registry.Projects);
 
-            list.AddRange(syncClient.AddProjects(registry.Projects));
-            list.AddRange(syncClient.DeleteProjects(registry.Projects));
-            list.AddRange(syncClient.UpdateProjectsProperties(registry.Projects));
-
-            list.AddRange(syncClient.AddGroups(registry.Projects));
-            list.AddRange(syncClient.DeleteGroups(registry.Projects));
-            list.AddRange(syncClient.UpdateGroupsProperties(registry.Projects));
         }
 
         private static XmlRegistry GenTestRegistry(int projectsCount)

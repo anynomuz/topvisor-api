@@ -41,33 +41,6 @@ namespace SyncConsoleApp
             return SubtractSets(oldItems, newItems, oldKeySelector, newKeySelector);
         }
 
-        public static SyncRequest GetAddRequest<T>(
-            IRestRequest request, IList<T> collection, T obj)
-            where T : IApiObject
-        {
-            Action<int> setResult = (id) =>
-                {
-                    obj.Id = id;
-                    collection.Add(obj);
-                };
-
-            return new SyncRequest(SyncRequestType.Create, request, setResult, obj);
-        }
-
-        public static SyncRequest GetDeleteRequest<T>(
-            IRestRequest request, IList<T> collection, T obj)
-        {
-            Action<int> setResult = (id) =>
-                {
-                    if (id > 0)
-                    {
-                        collection.Remove(obj);
-                    }
-                };
-
-            return new SyncRequest(SyncRequestType.Delete, request, setResult, obj);
-        }
-
         /// <summary>
         /// Вычитает из левого множества правое множество.
         /// </summary>

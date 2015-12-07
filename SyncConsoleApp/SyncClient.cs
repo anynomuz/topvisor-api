@@ -1,4 +1,5 @@
-﻿using System;
+﻿using RestSharp;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,18 +11,14 @@ namespace SyncConsoleApp
 {
     public class SyncClient
     {
-        private readonly ApiClient _client;
-        private readonly ApiRequestBuilder _requestBuilder;
-
         private readonly List<ApiProject> _apiProjects =
             new List<ApiProject>();
-
-        private readonly List<ApiKeyword> _apiKeywords =
-            new List<ApiKeyword>();
 
         private readonly List<SyncKeywordGroup> _apiGroups =
             new List<SyncKeywordGroup>();
 
+        private readonly ApiClient _client;
+        private readonly ApiRequestBuilder _requestBuilder;
 
         public SyncClient(ClientConfig config)
         {
@@ -32,7 +29,6 @@ namespace SyncConsoleApp
         public void LoadApiObjects()
         {
             _apiProjects.Clear();
-            _apiKeywords.Clear();
             _apiGroups.Clear();
 
 #warning Как обрабатывать дубли проектов?
@@ -44,197 +40,396 @@ namespace SyncConsoleApp
 
             var keywords = projects
                 .Select(p => _requestBuilder.GetKeywordsRequest(p.Id, false))
-                .SelectMany(p => _client.GetObjects<ApiKeyword>(p));
-
-            _apiKeywords.AddRange(keywords);
+                .SelectMany(p => _client.GetObjects<ApiKeyword>(p))
+                .ToList();
 
             // не удалось найти признак вкл/выкл у группы, поэтому
             // дополнительным запросом собираем id'шники включеных групп
             var enabledKeywords = projects
                 .Select(p => _requestBuilder.GetKeywordsRequest(p.Id, true))
                 .SelectMany(p => _client.GetObjects<ApiKeyword>(p).Select(k => k.GroupId))
-                .Distinct();
+                .Distinct()
+                .ToList();
 
-            ////var groups = _apiKeywords
-            ////    .GroupBy(k => k.GroupId)
-            ////    .Select(g => g.First())
-            ////    .Select(k => new SyncKeywordGroup(k, enabledKeywords.Contains(k.GroupId)));
+            var groups = keywords
+                .GroupBy(k => k.GroupId)
+                .Select(g => new SyncKeywordGroup(g, enabledKeywords.Contains(g.Key)));
 
-            ////_apiGroups.AddRange(groups);
+            _apiGroups.AddRange(groups);
         }
 
-        public void AddProjects(IEnumerable<XmlProject> projects)
+        #region Синхронизация проектов
+
+        public int SyncProjects(IEnumerable<XmlProject> projects)
         {
-            var createProjects = GetItemsForCreate(
+            int counter = 0;
+
+            counter += AddProjects(projects);
+            counter += UpdateProjectsProperties(projects);
+            counter += DeleteProjects(projects);
+
+            return counter;
+        }
+
+        public int AddProjects(IEnumerable<XmlProject> projects)
+        {
+            var createProjects = SyncHelper.GetItemsForCreate(
                 projects, _apiProjects, p => GetSiteKey(p.Site), p => GetSiteKey(p.Site))
                 .ToList();
 
-            var newProjects = createProjects.Select(
-                p => new ApiProject() { Id = -1, Site = p.Site })
-                .ToList();
-
-            // создаем новые проекты, нужны их Id чтобы дальше добавлять фразы
-            foreach (var proj in newProjects)
+            foreach (var proj in createProjects)
             {
                 var request = _requestBuilder.GetAddProjectRequest(proj.Site);
-                proj.Id = _client.GetIdResponse(request);
+                var projectId = _client.GetIdResponse(request);
 
-                _apiProjects.Add(proj);
+                var newProject = new ApiProject() { Id = projectId, Site = proj.Site, On = 0 };
+                _apiProjects.Add(newProject);
             }
 
-            // синхронизируем содержимое проектов
-            for (int i = 0; i < createProjects.Count; ++i)
-            {
-                UpdateProject(createProjects[i], newProjects[i]);
-            }
+            return createProjects.Count;
         }
 
-        public void DeleteProjects(IEnumerable<XmlProject> projects)
+        public int DeleteProjects(IEnumerable<XmlProject> projects)
         {
-            var dropProjects = GetItemsForDelete(
+            var dropProjects = SyncHelper.GetItemsForDelete(
                 projects, _apiProjects, p => GetSiteKey(p.Site), p => GetSiteKey(p.Site))
                 .ToList();
+
+            int counter = 0;
 
             foreach (var proj in dropProjects)
             {
                 var request = _requestBuilder.GetDeleteProjectRequest(proj.Id);
-                proj.Id = _client.GetIdResponse(request);
+                var res = _client.GetBoolResponse(request);
 
-                _apiProjects.Remove(proj);
+                if (res)
+                {
+                    _apiProjects.Remove(proj);
+                    ++counter;
+                }
             }
+
+            return counter;
         }
 
-        public void UpdateProjects(IEnumerable<XmlProject> projects)
+        public int UpdateProjectsProperties(IEnumerable<XmlProject> projects)
         {
-            var updateProjects = projects.Join(
-                _apiProjects,
-                p => GetSiteKey(p.Site),
-                p => GetSiteKey(p.Site),
-                (x, a) => new Tuple<XmlProject, ApiProject>(x, a));
+            var updateProjects = SyncHelper.GetItemsForUpdate(
+                projects, _apiProjects, p => GetSiteKey(p.Site), p => GetSiteKey(p.Site));
+
+            int counter = 0;
 
             foreach (var pair in updateProjects)
             {
-                UpdateProject(pair.Item1, pair.Item2);
+                // включить или выключить (перенести в архив) проект
+                var stateOn = (pair.Item1.Enabled) ? 0 : -1;
+
+                var apiProject = pair.Item2;
+
+                if (stateOn != apiProject.On)
+                {
+                    var request = _requestBuilder.GetUpdateProjectRequest(
+                        apiProject.Id, stateOn);
+
+                    var res = _client.GetBoolResponse(request);
+
+                    if (res)
+                    {
+                        apiProject.On = stateOn;
+                        ++counter;
+                    }
+                }
             }
+
+            return counter;
         }
 
-        private void UpdateProject(XmlProject xmlProject, ApiProject apiProject)
+        #endregion
+
+        #region Синхронизация групп
+
+        public int SyncGroups(IEnumerable<XmlProject> projects)
         {
-            // включить или выключить (перенести в архив) проект
-            var stateOn = (xmlProject.Enabled) ? 0 : -1;
+            int counter = 0;
 
-            if (stateOn != apiProject.On)
-            {
-                var request = _requestBuilder.GetUpdateProjectRequest(
-                    apiProject.Id, stateOn);
+            counter += AddGroups(projects);
+            counter += UpdateGroupsProperties(projects);
+            counter += DeleteGroups(projects);
 
-                _client.GetBoolResponse(request);
-                apiProject.On = stateOn;
-            }
-
-            // синхронизировать группы
-            var apiGroups = _apiGroups.Where(w => w.ProjectId == apiProject.Id)
-                .ToList();
-
-            UpdateGroups(apiProject, xmlProject.KeywordGroups, apiGroups);
+            return counter;
         }
 
-        private void UpdateGroups(
-            ApiProject project,
-            IEnumerable<XmlKeywordGroup> xmlGroups,
-            IEnumerable<SyncKeywordGroup> apiGroups)
+        public int AddGroups(IEnumerable<XmlProject> projects)
         {
-            // создать группы
-            var createGroups = GetItemsForCreate(
-                xmlGroups,
-                apiGroups,
-                g => GetGroupNameKey(g.Name),
-                g => GetGroupNameKey(g.GroupName));
+            var syncProjects = GetSyncProjectGroups(projects);
 
-            foreach (var xmlGroup in createGroups)
+            int counter = 0;
+
+            foreach (var sync in syncProjects)
             {
-                var request = _requestBuilder.GetAddKeywordGroupRequest(
-                    project.Id, xmlGroup.Name, true);
+                var createGroups = SyncHelper.GetItemsForCreate(
+                    sync.XmlObjects,
+                    sync.ApiObjects,
+                    g => GetGroupNameKey(g.Name),
+                    g => GetGroupNameKey(g.GroupName));
 
-                var groupId = _client.GetIdResponse(request);
+                foreach (var group in createGroups)
+                {
+                    var request = _requestBuilder.GetAddKeywordGroupRequest(
+                        sync.ParentId, group.Name, group.Enabled);
 
-                var apiGroup = new SyncKeywordGroup(
-                    project.Id, groupId, xmlGroup.Name, true);
+                    var groupId = _client.GetIdResponse(request);
 
-                _apiGroups.Add(apiGroup);
+                    var newGroup = new SyncKeywordGroup(
+                        sync.ParentId, groupId, group.Name, group.Enabled);
 
-                UpdateGroup(xmlGroup, apiGroup);
+                    _apiGroups.Add(newGroup);
+                    ++counter;
+                }
             }
 
-            // удалить группы
-            var dropGroups = GetItemsForDelete(
-                xmlGroups,
-                apiGroups,
-                g => GetGroupNameKey(g.Name),
-                g => GetGroupNameKey(g.GroupName));
-
-            foreach (var group in dropGroups)
-            {
-                var request = _requestBuilder.GetDeleteKeywordGroupRequest(
-                    project.Id, group.Id);
-
-                _client.GetBoolResponse(request);
-                _apiGroups.Remove(group);
-            }
-
-            // обновить группы
-            var updateGroups = xmlGroups.Join(
-                apiGroups,
-                g => GetGroupNameKey(g.Name),
-                g => GetGroupNameKey(g.GroupName),
-                (x, a) => new Tuple<XmlKeywordGroup, SyncKeywordGroup>(x, a));
-
-            foreach (var pair in updateGroups)
-            {
-                UpdateGroup(pair.Item1, pair.Item2);
-            }
+            return counter;
         }
 
-        private void UpdateGroup(XmlKeywordGroup xmlGroup, SyncKeywordGroup apiGroup)
+        public int DeleteGroups(IEnumerable<XmlProject> projects)
         {
-            // включить / выключить группы
-            if (apiGroup.Enabled != xmlGroup.Enabled)
-            {
-                var request = _requestBuilder.GetUpdateKeywordGroupRequest(
-                    apiGroup.ProjectId, apiGroup.Id, xmlGroup.Enabled);
+            var syncGroups = GetSyncProjectGroups(projects);
 
-                _client.GetBoolResponse(request);
-                apiGroup.Enabled = xmlGroup.Enabled;
+            int counter = 0;
+
+            foreach (var sync in syncGroups)
+            {
+                var dropGroups = SyncHelper.GetItemsForDelete(
+                    sync.XmlObjects,
+                    sync.ApiObjects,
+                    g => GetGroupNameKey(g.Name),
+                    g => GetGroupNameKey(g.GroupName));
+
+                foreach (var group in dropGroups)
+                {
+                    var request = _requestBuilder.GetDeleteKeywordGroupRequest(
+                        sync.ParentId, group.Id);
+
+                    var res = _client.GetBoolResponse(request);
+
+                    if (res)
+                    {
+                        _apiGroups.Remove(group);
+                        ++counter;
+                    }
+                }
             }
 
-            var apiKeywords = _apiKeywords.Where(
-                w => (w.ProjectId == apiGroup.ProjectId) && (w.GroupId == apiGroup.Id))
-                .ToList();
+            return counter;
+        }
 
-            // добавить фразы
-            var createWords = GetItemsForCreate(
-                xmlGroup.Keywords, apiKeywords, w => w.Phrase, w => w.Phrase);
+        public int UpdateGroupsProperties(IEnumerable<XmlProject> projects)
+        {
+            var syncGroupPair = GetSyncGroupsPair(projects);
 
-            var addKeywords = createWords
-                .Where(p => !string.IsNullOrEmpty(p.Phrase)).Select(p => p.Phrase);
+            int counter = 0;
 
-            var addRequest = _requestBuilder.GetAddKeywordsRequest(
-                apiGroup.ProjectId, apiGroup.Id, addKeywords);
-
-            _client.GetResponseResult<List<int>>(addRequest);
-
-            // TODO: Установить target-страницу
-
-            // удалить фразы
-            var dropWords = GetItemsForDelete(
-                xmlGroup.Keywords, apiKeywords, w => w.Phrase, w => w.Phrase);
-
-            foreach (var word in dropWords)
+            foreach (var pair in syncGroupPair)
             {
-                var dropRequest = _requestBuilder.GetDeleteKeywordRequest(word.Id);
-                _client.GetBoolResponse(dropRequest);
+                var xmlGroup = pair.Item1;
+                var apiGroup = pair.Item2;
+
+                // включить / выключить группы
+                if (apiGroup.Enabled != xmlGroup.Enabled)
+                {
+                    var request = _requestBuilder.GetUpdateKeywordGroupRequest(
+                        apiGroup.ProjectId, apiGroup.Id, xmlGroup.Enabled);
+
+                    var res = _client.GetBoolResponse(request);
+
+                    if (res)
+                    {
+                        apiGroup.Enabled = xmlGroup.Enabled;
+                        ++counter;
+                    }
+                }
+            }
+
+            return counter;
+        }
+
+        #endregion
+
+        #region Синхронизация фраз
+
+        public int SyncKeywords(IEnumerable<XmlProject> projects)
+        {
+            int counter = 0;
+
+            counter += AddKeywords(projects);
+            counter += UpdateKeywordsProperties(projects);
+            counter += DeleteKeywords(projects);
+
+            return counter;
+        }
+
+        public int AddKeywords(IEnumerable<XmlProject> projects)
+        {
+            var syncGroupPair = GetSyncGroupsPair(projects);
+
+            int counter = 0;
+
+            foreach (var groupPair in syncGroupPair)
+            {
+                var apiGroup = groupPair.Item2;
+
+                var createWords = SyncHelper.GetItemsForCreate(
+                    groupPair.Item1.Keywords.Where(k => !string.IsNullOrEmpty(k.Phrase)),
+                    apiGroup.Keywords,
+                    w => GetPhraseKey(w.Phrase),
+                    w => GetPhraseKey(w.Phrase));
+
+                // пакетное добавление фраз без таргета
+                var addKeywords = createWords
+                    .Where(k => string.IsNullOrEmpty(k.TargetUrl))
+                    .ToList();
+
+                if (addKeywords.Count > 0)
+                {
+                    var request = _requestBuilder.GetAddKeywordsRequest(
+                        apiGroup.ProjectId, apiGroup.Id, addKeywords.Select(p => p.Phrase));
+
+                    var res = _client.GetResponseResult<List<int>>(request);
+
+                    foreach (var word in addKeywords)
+                    {
+                        apiGroup.AddKeyword(word.Phrase);
+                    }
+
+                    counter += addKeywords.Count;
+                }
+
+                // добавление по одной фраз с трагетом, чтобы получить их id
+                addKeywords = createWords
+                    .Where(k => !string.IsNullOrEmpty(k.TargetUrl))
+                    .ToList();
+
+                foreach (var word in addKeywords)
+                {
+                    var request = _requestBuilder.GetAddKeywordRequest(
+                        apiGroup.ProjectId, apiGroup.Id, word.Phrase);
+
+                    var phraseId = _client.GetIdResponse(request);
+                    var keyword = apiGroup.AddKeyword(word.Phrase);
+                    keyword.Id = phraseId;
+
+                    ++counter;
+                }
+            }
+
+            return counter;
+        }
+
+        public int DeleteKeywords(IEnumerable<XmlProject> projects)
+        {
+            var syncGroupPair = GetSyncGroupsPair(projects);
+
+            int counter = 0;
+
+            foreach (var groupPair in syncGroupPair)
+            {
+                var dropWords = SyncHelper.GetItemsForDelete(
+                    groupPair.Item1.Keywords,
+                    groupPair.Item2.Keywords,
+                    w => GetPhraseKey(w.Phrase),
+                    w => GetPhraseKey(w.Phrase));
+
+                foreach (var word in dropWords)
+                {
+                    var request = _requestBuilder.GetDeleteKeywordRequest(word.Id);
+                    var res = _client.GetBoolResponse(request);
+
+                    if (res)
+                    {
+                        ++counter;
+                    }
+                }
+            }
+
+            return counter;
+        }
+
+        public int UpdateKeywordsProperties(IEnumerable<XmlProject> projects)
+        {
+            var syncGroupPair = GetSyncGroupsPair(projects);
+
+            int counter = 0;
+
+            foreach (var groupPair in syncGroupPair)
+            {
+                var pairs = SyncHelper.GetItemsForUpdate(
+                    groupPair.Item1.Keywords,
+                    groupPair.Item2.Keywords,
+                    w => GetPhraseKey(w.Phrase),
+                    w => GetPhraseKey(w.Phrase));
+
+                foreach (var wordPair in pairs)
+                {
+                    if (GetSiteKey(wordPair.Item1.TargetUrl) != GetSiteKey(wordPair.Item2.Target))
+                    {
+                        var request = _requestBuilder.GetUpdateKeywordTargetRequest(
+                            wordPair.Item2.Id, wordPair.Item1.TargetUrl);
+
+                        var res = _client.GetBoolResponse(request);
+
+                        if (res)
+                        {
+                            ++counter;
+                        }
+                    }
+                }
+            }
+
+            return counter;
+        }
+
+        #endregion
+
+        private IEnumerable<Tuple<XmlKeywordGroup, SyncKeywordGroup>> GetSyncGroupsPair(
+            IEnumerable<XmlProject> projects)
+        {
+            var syncGroups = GetSyncProjectGroups(projects);
+
+            foreach (var sync in syncGroups)
+            {
+                var updateGroups = SyncHelper.GetItemsForUpdate(
+                    sync.XmlObjects,
+                    sync.ApiObjects,
+                    g => GetGroupNameKey(g.Name),
+                    g => GetGroupNameKey(g.GroupName));
+
+                foreach (var pair in updateGroups)
+                {
+                    yield return pair;
+                }
             }
         }
+        
+        private IEnumerable<SyncObject<XmlKeywordGroup, SyncKeywordGroup>> GetSyncProjectGroups(
+            IEnumerable<XmlProject> projects)
+        {
+            var updateProjects = SyncHelper.GetItemsForUpdate(
+                projects, _apiProjects, p => GetSiteKey(p.Site), p => GetSiteKey(p.Site));
+
+            foreach (var pair in updateProjects)
+            {
+                var xmlProject = pair.Item1;
+                var apiProject = pair.Item2;
+
+                var projectGroups = _apiGroups
+                    .Where(g => g.ProjectId == apiProject.Id)
+                    .ToList();
+
+                yield return new SyncObject<XmlKeywordGroup, SyncKeywordGroup>(
+                    pair.Item2.Id, pair.Item1.KeywordGroups, projectGroups);
+            }
+        }
+
 
         private static string GetSiteKey(string site)
         {
@@ -247,64 +442,34 @@ namespace SyncConsoleApp
             return groupName.Trim().ToUpper();
         }
 
-        private static IEnumerable<Tuple<T1, T2>> GetItemsForUpdate<T1, T2, K>(
-            IEnumerable<T1> newItems,
-            IEnumerable<T2> oldItems,
-            Func<T1, K> newKeySelector,
-            Func<T2, K> oldKeySelector)
+        private static string GetPhraseKey(string phrase)
         {
-            return newItems.Join(
-                oldItems,
-                t1 => newKeySelector(t1),
-                t2 => oldKeySelector(t2),
-                (t1, t2) => new Tuple<T1, T2>(t1, t2));
+            return phrase.Trim().ToUpper();
         }
 
-        private static IEnumerable<T1> GetItemsForCreate<T1, T2, K>(
-            IEnumerable<T1> newItems,
-            IEnumerable<T2> oldItems,
-            Func<T1, K> newKeySelector,
-            Func<T2, K> oldKeySelector)
+        private class SyncObject<T1, T2>
         {
-            return SubtractSets(
-                newItems, oldItems, newKeySelector, oldKeySelector);
-        }
+            public SyncObject(
+                int projectId, IEnumerable<T1> xmlObjects, IEnumerable<T2> apiObjects)
+	        {
+                ParentId = projectId;
+                XmlObjects = xmlObjects;
+                ApiObjects = apiObjects;
+	        }
 
-        private static IEnumerable<T2> GetItemsForDelete<T1, T2, K>(
-            IEnumerable<T1> newItems,
-            IEnumerable<T2> oldItems,
-            Func<T1, K> newKeySelector,
-            Func<T2, K> oldKeySelector)
-        {
-            return SubtractSets(
-                oldItems, newItems, oldKeySelector, newKeySelector);
-        }
-
-        /// <summary>
-        /// Вычитает из левого множества правое множество.
-        /// </summary>
-        /// <typeparam name="T1">Тип левого множества.</typeparam>
-        /// <typeparam name="T2">Тип правого множества.</typeparam>
-        /// <typeparam name="K">Тип ключа множеств.</typeparam>
-        /// <param name="leftItems">Левое множество.</param>
-        /// <param name="rigthItems">Правое множество.</param>
-        /// <param name="leftKeySelector">Селектор ключа левого множества.</param>
-        /// <param name="rigthKeySelector">Селектор ключа правого множества.</param>
-        /// <returns>Разность множеств.</returns>
-        private static IEnumerable<T1> SubtractSets<T1, T2, K>(
-            IEnumerable<T1> leftItems,
-            IEnumerable<T2> rigthItems,
-            Func<T1, K> leftKeySelector,
-            Func<T2, K> rigthKeySelector)
-        {
-            var dic = new Dictionary<K, T2>();
-
-            foreach (var val in rigthItems)
+            public SyncObject(
+                int projectId, int groupId, IEnumerable<T1> xmlObjects, IEnumerable<T2> apiObjects)
             {
-                dic[rigthKeySelector(val)] = val;
+                ParentId = projectId;
+                XmlObjects = xmlObjects;
+                ApiObjects = apiObjects;
             }
 
-            return leftItems.Where(i => !dic.ContainsKey(leftKeySelector(i)));
+            public int ParentId { get; private set; }
+
+            public IEnumerable<T1> XmlObjects { get; private set; }
+        
+            public IEnumerable<T2> ApiObjects { get; private set; }
         }
     }
 }

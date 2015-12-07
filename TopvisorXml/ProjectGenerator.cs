@@ -50,11 +50,11 @@ namespace Topvisor.Xml
             return proj;
         }
 
-        private static IEnumerable<string> GetWords(string baseWord, int count)
+        private IEnumerable<string> GetWords(string baseWord, int count)
         {
             for (int i = 0; i < count; ++i)
             {
-                yield return string.Concat(baseWord, i.ToString());
+                yield return string.Concat(baseWord, _random.Next(int.MaxValue));
             }
         }
     }

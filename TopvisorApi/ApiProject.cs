@@ -1,6 +1,7 @@
 ﻿using RestSharp.Deserializers;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,6 +11,7 @@ namespace Topvisor.Api
     /// <summary>
     /// Проект получаемый по Api. 
     /// </summary>
+    [DebuggerDisplay("Id = {Id}, Site = {Site}, On = {On}")]
     public class ApiProject : IValidable
     {
         [DeserializeAs(Name = "id")]
