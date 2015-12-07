@@ -71,7 +71,11 @@ namespace Topvisor.Api
 
             request.AddParameter("oper", "get");
             request.AddParameter("post[project_id]", projectId);
-            request.AddParameter("post[only_enabled]", onlyEnabled ? 1 : 0);
+
+            if (onlyEnabled)
+            {
+                request.AddParameter("post[only_enabled]", 1);
+            }
 
             if (groupId > 0)
             {
@@ -156,7 +160,7 @@ namespace Topvisor.Api
         }
 
         public IRestRequest GetUpdateKeywordGroupRequest(
-            int projectId, int groupId, int on)
+            int projectId, int groupId, bool enabled)
         {
             var request = new RestRequest(Method.GET);
             request.AddParameter("module", "mod_keywords");
@@ -165,7 +169,7 @@ namespace Topvisor.Api
             request.AddParameter("method", "group");
             request.AddParameter("post[project_id]", projectId);
             request.AddParameter("post[id]", groupId);
-            request.AddParameter("post[on]", on);
+            request.AddParameter("post[on]", enabled ? 1 : 0);
 
             return request;
         }

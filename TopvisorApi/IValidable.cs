@@ -9,13 +9,8 @@ namespace Topvisor.Api
     /// <summary>
     /// Интерфейс объекта Api умеющего валидироваться.
     /// </summary>
-    internal interface IValidable
+    internal interface IValidable : IApiObject
     {
-        /// <summary>
-        /// Id объекта для идентификации.
-        /// </summary>
-        int Id { get; }
-
         /// <summary>
         /// Проверить данные объекта.
         /// </summary>

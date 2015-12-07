@@ -19,6 +19,9 @@ namespace SyncConsoleApp
         private readonly List<ApiKeyword> _apiKeywords =
             new List<ApiKeyword>();
 
+        private readonly List<int> _enabledGroupsId =
+            new List<int>();
+
         public SyncClient(ClientConfig config)
         {
             _client = new ApiClient(config);
@@ -32,14 +35,22 @@ namespace SyncConsoleApp
             var getProjects = _requestBuilder.GetProjectsRequest();
             var projects = _client.GetObjects<ApiProject>(getProjects);
 
-#warning Брать все фразы или только включеные?
+            _apiProjects.AddRange(projects);
 
             var keywords = projects
                 .Select(p => _requestBuilder.GetKeywordsRequest(p.Id, false))
                 .SelectMany(p => _client.GetObjects<ApiKeyword>(p));
 
-            _apiProjects.AddRange(projects);
             _apiKeywords.AddRange(keywords);
+
+            // не удалось найти признак вкл/выкл у группы, поэтому
+            // таким образом собираем id'шники включеных групп,
+            var enabledKeywords = projects
+                .Select(p => _requestBuilder.GetKeywordsRequest(p.Id, true))
+                .SelectMany(p => _client.GetObjects<ApiKeyword>(p).Select(k => k.GroupId))
+                .Distinct();
+
+            _enabledGroupsId.AddRange(enabledKeywords);
         }
 
         public void AddProjects(IEnumerable<XmlProject> projects)
@@ -56,7 +67,7 @@ namespace SyncConsoleApp
             foreach (var proj in newProjects)
             {
                 var request = _requestBuilder.GetAddProjectRequest(proj.Site);
-                proj.Id = _client.ExecQueryId(request);
+                proj.Id = _client.GetIdResponse(request);
 
                 _apiProjects.Add(proj);
             }
@@ -77,7 +88,7 @@ namespace SyncConsoleApp
             foreach (var proj in dropProjects)
             {
                 var request = _requestBuilder.GetDeleteProjectRequest(proj.Id);
-                proj.Id = _client.ExecQueryId(request);
+                proj.Id = _client.GetIdResponse(request);
 
                 _apiProjects.Remove(proj);
             }
@@ -107,7 +118,7 @@ namespace SyncConsoleApp
                 var request = _requestBuilder.GetUpdateProjectRequest(
                     apiProject.Id, stateOn);
 
-                _client.ExecQueryBool(request);
+                _client.GetBoolResponse(request);
                 apiProject.On = stateOn;
             }
 
@@ -129,23 +140,24 @@ namespace SyncConsoleApp
             var createGroups = GetItemsForCreate(
                 xmlGroups,
                 apiGroups,
-                g => g.Name.Trim().ToUpper(),
-                g => g.GroupName.Trim().ToUpper());
+                g => GetGroupNameKey(g.Name),
+                g => GetGroupNameKey(g.GroupName));
 
             foreach (var xmlGroup in createGroups)
             {
                 var request = _requestBuilder.GetAddKeywordGroupRequest(
                     project.Id, xmlGroup.Name);
 
-                var groupId = _client.ExecQueryId(request);
+                var groupId = _client.GetIdResponse(request);
 
                 var apiGroup = new ApiKeywordGroup()
                     {
                         ProjectId = project.Id,
                         GroupId = groupId,
                         GroupName = xmlGroup.Name,
-                        On = 1
                     };
+
+                _enabledGroupsId.Add(groupId);
 
                 UpdateGroup(xmlGroup, apiGroup);
             }
@@ -154,22 +166,23 @@ namespace SyncConsoleApp
             var dropGroups = GetItemsForDelete(
                 xmlGroups,
                 apiGroups,
-                g => g.Name.Trim().ToUpper(),
-                g => g.GroupName.Trim().ToUpper());
+                g => GetGroupNameKey(g.Name),
+                g => GetGroupNameKey(g.GroupName));
 
             foreach (var group in dropGroups)
             {
                 var request = _requestBuilder.GetDeleteKeywordGroupRequest(
                     project.Id, group.GroupId);
 
-                _client.ExecQueryBool(request);
+                _client.GetBoolResponse(request);
+                _enabledGroupsId.Remove(group.GroupId);
             }
 
             // обновить группы
             var updateGroups = xmlGroups.Join(
                 apiGroups,
-                g => g.Name.Trim().ToUpper(),
-                g => g.GroupName.Trim().ToUpper(),
+                g => GetGroupNameKey(g.Name),
+                g => GetGroupNameKey(g.GroupName),
                 (x, a) => new Tuple<XmlKeywordGroup, ApiKeywordGroup>(x, a));
 
             foreach (var pair in updateGroups)
@@ -180,16 +193,24 @@ namespace SyncConsoleApp
 
         private void UpdateGroup(XmlKeywordGroup xmlGroup, ApiKeywordGroup apiGroup)
         {
-            // включить / выключить группы
-            var stateOn = (xmlGroup.Enabled) ? 1 : 0;
+            var apiGroupEnabled = _enabledGroupsId.Contains(apiGroup.GroupId);
 
-            if (stateOn != apiGroup.On)
+            // включить / выключить группы
+            if (apiGroupEnabled != xmlGroup.Enabled)
             {
                 var request = _requestBuilder.GetUpdateKeywordGroupRequest(
-                    apiGroup.ProjectId, apiGroup.GroupId, stateOn);
+                    apiGroup.ProjectId, apiGroup.GroupId, xmlGroup.Enabled);
 
-                _client.ExecQueryBool(request);
-                apiGroup.On = stateOn;
+                _client.GetBoolResponse(request);
+
+                if (xmlGroup.Enabled)
+                {
+                    _enabledGroupsId.Add(apiGroup.GroupId);
+                }
+                else
+                {
+                    _enabledGroupsId.Remove(apiGroup.GroupId);
+                }
             }
 
             var apiKeywords = _apiKeywords.Where(
@@ -206,9 +227,9 @@ namespace SyncConsoleApp
             var addRequest = _requestBuilder.GetAddKeywordsRequest(
                 apiGroup.ProjectId, apiGroup.GroupId, addKeywords);
 
-            _client.ExecQueryValue<List<int>>(addRequest);
+            _client.GetResponseResult<List<int>>(addRequest);
 
-            // TODO: Установить target страницу
+            // TODO: Установить target-страницу
 
             // удалить фразы
             var dropWords = GetItemsForDelete(
@@ -217,7 +238,7 @@ namespace SyncConsoleApp
             foreach (var word in dropWords)
             {
                 var dropRequest = _requestBuilder.GetDeleteKeywordRequest(word.Id);
-                _client.ExecQueryBool(dropRequest);
+                _client.GetBoolResponse(dropRequest);
             }
         }
 
@@ -225,6 +246,11 @@ namespace SyncConsoleApp
         {
             return site.Trim().TrimEnd('/', '.').ToUpper()
                 .Replace("HTTP://", "").Replace("HTTPS://", "");
+        }
+
+        private static string GetGroupNameKey(string groupName)
+        {
+            return groupName.Trim().ToUpper();
         }
 
         private static IEnumerable<T1> GetItemsForCreate<T1, T2, K>(

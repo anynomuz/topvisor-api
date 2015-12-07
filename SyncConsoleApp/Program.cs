@@ -1,11 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Configuration;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Serialization;
-using RestSharp;
 using Topvisor.Api;
 using Topvisor.Xml;
 
@@ -27,14 +22,22 @@ namespace SyncConsoleApp
 
 #warning Отвалидировать урлы в проектах и словах
 
+            var apiKey = ConfigurationManager.AppSettings["apikey"];
+            if (string.IsNullOrEmpty(apiKey))
+            {
+                throw new InvalidOperationException(
+                    "Invalid 'apikey' setting in app.config.");
+            }
+
             //------
-            var config = new ClientConfig("768a9f24525eca4b84fe");
+            var config = new ClientConfig(apiKey);
+
 
             ////var rb = new ApiRequestBuilder();
             ////var client = new ApiClient(config);
 
-            ////var request = rb.GetUpdateProjectRequest(399070, true);
-            ////var res = client.ExecQueryBool(request);
+            ////var request = rb.GetGroupsRequest(399214, false);
+            ////var res = client.GetObjects<ApiKeywordGroup>(request);
 
             ////return;
 

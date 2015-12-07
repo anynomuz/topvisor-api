@@ -18,8 +18,5 @@ namespace Topvisor.Api
 
         [DeserializeAs(Name = "group_name")]
         public string GroupName { get; set; }
-
-        [DeserializeAs(Name = "on")]
-        public int On { get; set; }
     }
 }

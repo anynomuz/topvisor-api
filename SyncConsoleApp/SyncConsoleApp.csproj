@@ -37,9 +37,9 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
@@ -48,6 +48,12 @@
     <Compile Include="Program.cs" />
     <Compile Include="SyncClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SyncClient2.cs" />
+    <Compile Include="SyncContext.cs" />
+    <Compile Include="SyncKeywordGroup.cs" />
+    <Compile Include="SyncRequest.cs" />
+    <Compile Include="UpdateProjectTask.cs" />
+    <Compile Include="SyncRequestType.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

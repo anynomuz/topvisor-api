@@ -30,22 +30,26 @@ namespace Topvisor.Api
                 throw new ArgumentNullException("config");
             }
 
-            _client = new RestClient();
-            _client.BaseUrl = config.GetBaseUrl();
-
+            _client = new RestClient(config.GetBaseUrl());
             _maxRequestPerSecond = config.MaxRequestPerSecond;
 
             _deserailizer = new JsonDeserializer();
         }
 
+        /// <summary>
+        /// Возвращает коллекцию объектов.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="request"></param>
+        /// <returns></returns>
         public IEnumerable<T> GetObjects<T>(IRestRequest request)
         {
-            WaitLimitsBeforeRequest();
+            WaitBeforeRequestIfNeeded();
             var response = _client.Execute<List<T>>(request);
 
             ThrowIfError(response);
 
-            var apiResponse = TryGetResponse(response);
+            var apiResponse = TryGetResponseMessage(response);
             ThrowIfError(apiResponse);
 
             var list = response.Data as IEnumerable<IValidable>;
@@ -61,26 +65,42 @@ namespace Topvisor.Api
             return response.Data;
         }
 
-        public T ExecQueryValue<T>(IRestRequest request)
+        /// <summary>
+        /// Возвращает типизованное значение результата
+        /// из стандартного сообщения ответа.
+        /// </summary>
+        /// <typeparam name="T">Тип результата.</typeparam>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        public T GetResponseResult<T>(IRestRequest request)
         {
-            WaitLimitsBeforeRequest();
+            WaitBeforeRequestIfNeeded();
             var response = _client.Execute<ApiResponseResult<T>>(request);
 
             ThrowIfError(response);
             return response.Data.Result;
         }
 
-        public int ExecQueryId(IRestRequest request)
+        /// <summary>
+        /// Возвращает результат 
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        public int GetIdResponse(IRestRequest request)
         {
-            return ExecQueryValue<int>(request);
+            return GetResponseResult<int>(request);
         }
 
-        public bool ExecQueryBool(IRestRequest request)
+        public bool GetBoolResponse(IRestRequest request)
         {
-            return ExecQueryValue<int>(request) > 0;
+            return GetResponseResult<int>(request) > 0;
         }
 
-        private void WaitLimitsBeforeRequest()
+        /// <summary>
+        /// Вызывается перед выполнением запроса.
+        /// При необходимости ждет в соответствии с настройками по таймаутам.
+        /// </summary>
+        private void WaitBeforeRequestIfNeeded()
         {
             ++_totalRequestCounter;
 
@@ -97,7 +117,20 @@ namespace Topvisor.Api
             }
         }
 
-        private ApiResponse TryGetResponse<T>(IRestResponse<T> response)
+        private static void ThrowIfError<T>(IRestResponse<T> response)
+        {
+            if (response.ErrorException != null)
+            {
+                throw new ApplicationException(
+                    "Error retrieving response. Check inner details for more info.",
+                    response.ErrorException);
+            }
+
+            var apiResponse = response.Data as ApiResponse;
+            ThrowIfError(apiResponse);
+        }
+
+        private ApiResponse TryGetResponseMessage<T>(IRestResponse<T> response)
         {
             if ((response.Data == null) && (response.StatusCode == HttpStatusCode.OK))
             {
@@ -117,19 +150,6 @@ namespace Topvisor.Api
 
                 throw new ApplicationException(error);
             }
-        }
-
-        private static void ThrowIfError<T>(IRestResponse<T> response)
-        {
-            if (response.ErrorException != null)
-            {
-                throw new ApplicationException(
-                    "Error retrieving response. Check inner details for more info.",
-                    response.ErrorException);
-            }
-
-            var apiResponse = response.Data as ApiResponse;
-            ThrowIfError(apiResponse);
         }
     }
 }
