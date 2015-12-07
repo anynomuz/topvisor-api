@@ -47,7 +47,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ApiKeywordGroup.cs" />
     <Compile Include="ApiRequestBuilder.cs" />
     <Compile Include="ApiClient.cs" />
     <Compile Include="ApiResponseResult.cs" />

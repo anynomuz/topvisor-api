@@ -49,10 +49,9 @@
     <Compile Include="SyncClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SyncClient2.cs" />
-    <Compile Include="SyncContext.cs" />
+    <Compile Include="SyncHelper.cs" />
     <Compile Include="SyncKeywordGroup.cs" />
     <Compile Include="SyncRequest.cs" />
-    <Compile Include="UpdateProjectTask.cs" />
     <Compile Include="SyncRequestType.cs" />
   </ItemGroup>
   <ItemGroup>

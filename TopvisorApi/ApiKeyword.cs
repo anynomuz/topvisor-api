@@ -10,10 +10,19 @@ namespace Topvisor.Api
     /// <summary>
     /// Фраза получаемая по Api.
     /// </summary>
-    public class ApiKeyword : ApiKeywordGroup, IValidable
+    public class ApiKeyword : IValidable
     {
         [DeserializeAs(Name = "id")]
         public int Id { get; set; }
+
+        [DeserializeAs(Name = "project_id")]
+        public int ProjectId { get; set; }
+
+        [DeserializeAs(Name = "group_id")]
+        public int GroupId { get; set; }
+
+        [DeserializeAs(Name = "group_name")]
+        public string GroupName { get; set; }
 
         [DeserializeAs(Name = "phrase_id")]
         public int PhraseId { get; set; }

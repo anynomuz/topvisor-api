@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
 using Topvisor.Api;
@@ -31,22 +32,35 @@ namespace SyncConsoleApp
 
             //------
             var config = new ClientConfig(apiKey);
-
+            var client = new ApiClient(config);
 
             ////var rb = new ApiRequestBuilder();
-            ////var client = new ApiClient(config);
+            
 
             ////var request = rb.GetGroupsRequest(399214, false);
             ////var res = client.GetObjects<ApiKeywordGroup>(request);
 
             ////return;
 
-            var syncClient = new SyncClient(config);
+            ////var syncClient = new SyncClient(config);
 
-            syncClient.LoadApiObjects();
-            syncClient.AddProjects(registry.Projects);
-            syncClient.UpdateProjects(registry.Projects);
-            syncClient.DeleteProjects(registry.Projects);
+            ////syncClient.LoadApiObjects();
+            ////syncClient.AddProjects(registry.Projects);
+            ////syncClient.UpdateProjects(registry.Projects);
+            ////syncClient.DeleteProjects(registry.Projects);
+
+            var syncClient = new SyncClient2(config);
+            syncClient.LoadApiObjects(client);
+
+            var list = new List<SyncRequest>();
+
+            list.AddRange(syncClient.AddProjects(registry.Projects));
+            list.AddRange(syncClient.DeleteProjects(registry.Projects));
+            list.AddRange(syncClient.UpdateProjectsProperties(registry.Projects));
+
+            list.AddRange(syncClient.AddGroups(registry.Projects));
+            list.AddRange(syncClient.DeleteGroups(registry.Projects));
+            list.AddRange(syncClient.UpdateGroupsProperties(registry.Projects));
         }
 
         private static XmlRegistry GenTestRegistry(int projectsCount)

@@ -31,6 +31,10 @@ namespace SyncConsoleApp
 
         public void LoadApiObjects()
         {
+            _apiProjects.Clear();
+            _apiKeywords.Clear();
+            _apiGroups.Clear();
+
 #warning Как обрабатывать дубли проектов?
 
             var getProjects = _requestBuilder.GetProjectsRequest();
@@ -51,12 +55,12 @@ namespace SyncConsoleApp
                 .SelectMany(p => _client.GetObjects<ApiKeyword>(p).Select(k => k.GroupId))
                 .Distinct();
 
-            var groups = _apiKeywords
-                .GroupBy(k => k.GroupId)
-                .SelectMany(g => g)
-                .Select(k => new SyncKeywordGroup(k, enabledKeywords.Contains(k.GroupId)));
+            ////var groups = _apiKeywords
+            ////    .GroupBy(k => k.GroupId)
+            ////    .Select(g => g.First())
+            ////    .Select(k => new SyncKeywordGroup(k, enabledKeywords.Contains(k.GroupId)));
 
-            _apiGroups.AddRange(groups);
+            ////_apiGroups.AddRange(groups);
         }
 
         public void AddProjects(IEnumerable<XmlProject> projects)
@@ -172,7 +176,7 @@ namespace SyncConsoleApp
             foreach (var group in dropGroups)
             {
                 var request = _requestBuilder.GetDeleteKeywordGroupRequest(
-                    project.Id, group.GroupId);
+                    project.Id, group.Id);
 
                 _client.GetBoolResponse(request);
                 _apiGroups.Remove(group);
@@ -197,14 +201,14 @@ namespace SyncConsoleApp
             if (apiGroup.Enabled != xmlGroup.Enabled)
             {
                 var request = _requestBuilder.GetUpdateKeywordGroupRequest(
-                    apiGroup.ProjectId, apiGroup.GroupId, xmlGroup.Enabled);
+                    apiGroup.ProjectId, apiGroup.Id, xmlGroup.Enabled);
 
                 _client.GetBoolResponse(request);
                 apiGroup.Enabled = xmlGroup.Enabled;
             }
 
             var apiKeywords = _apiKeywords.Where(
-                w => (w.ProjectId == apiGroup.ProjectId) && (w.GroupId == apiGroup.GroupId))
+                w => (w.ProjectId == apiGroup.ProjectId) && (w.GroupId == apiGroup.Id))
                 .ToList();
 
             // добавить фразы
@@ -215,7 +219,7 @@ namespace SyncConsoleApp
                 .Where(p => !string.IsNullOrEmpty(p.Phrase)).Select(p => p.Phrase);
 
             var addRequest = _requestBuilder.GetAddKeywordsRequest(
-                apiGroup.ProjectId, apiGroup.GroupId, addKeywords);
+                apiGroup.ProjectId, apiGroup.Id, addKeywords);
 
             _client.GetResponseResult<List<int>>(addRequest);
 
