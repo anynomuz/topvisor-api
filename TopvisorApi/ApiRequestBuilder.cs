@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 
 namespace Topvisor.Api
 {
+    /// <summary>
+    /// Построитель запросов к api.
+    /// </summary>
     public class ApiRequestBuilder
     {
         public ApiRequestBuilder()

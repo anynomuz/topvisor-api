@@ -13,7 +13,7 @@ namespace Topvisor.Api
     /// <summary>
     /// Клиент для доступа к Api Топвизора.
     /// </summary>
-    public class ApiClient
+    public class ApiClient : Topvisor.Api.IApiClient
     {
         private readonly IRestClient _client;
         private readonly IDeserializer _deserailizer;
@@ -37,12 +37,13 @@ namespace Topvisor.Api
         }
 
         /// <summary>
-        /// Возвращает коллекцию объектов.
+        /// Возвращает ответ в виде коллекции объектов.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="request"></param>
         /// <returns></returns>
-        public IEnumerable<T> GetObjects<T>(IRestRequest request)
+        public IEnumerable<T> GetResponseObjects<T>(IRestRequest request)
+            where T : IApiObject
         {
             WaitBeforeRequestIfNeeded();
             var response = _client.Execute<List<T>>(request);
@@ -82,15 +83,22 @@ namespace Topvisor.Api
         }
 
         /// <summary>
-        /// Возвращает результат 
+        /// Возвращает целочисленное значение результата
+        /// из стандартного сообщения ответа.
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public int GetIdResponse(IRestRequest request)
+        public int GetIntResponse(IRestRequest request)
         {
             return GetResponseResult<int>(request);
         }
 
+        /// <summary>
+        /// Возвращает булево значение результата.
+        /// из стандартного сообщения ответа.
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
         public bool GetBoolResponse(IRestRequest request)
         {
             return GetResponseResult<int>(request) > 0;
@@ -98,7 +106,7 @@ namespace Topvisor.Api
 
         /// <summary>
         /// Вызывается перед выполнением запроса.
-        /// При необходимости ждет в соответствии с настройками по таймаутам.
+        /// При необходимости ждет в соответствии с лимитами запросов.
         /// </summary>
         private void WaitBeforeRequestIfNeeded()
         {

@@ -9,6 +9,9 @@ using Topvisor.Xml;
 
 namespace SyncConsoleApp
 {
+    /// <summary>
+    /// Клиент для выполнения синхронизации.
+    /// </summary>
     public class SyncClient
     {
         private readonly List<ApiProject> _apiProjects =
@@ -17,16 +20,24 @@ namespace SyncConsoleApp
         private readonly List<SyncKeywordGroup> _apiGroups =
             new List<SyncKeywordGroup>();
 
-        private readonly ApiClient _client;
+        private readonly IApiClient _client;
         private readonly ApiRequestBuilder _requestBuilder;
 
-        public SyncClient(ClientConfig config)
+        public SyncClient(IApiClient client)
         {
-            _client = new ApiClient(config);
+            if (client == null)
+            {
+                throw new ArgumentNullException("client");
+            }
+
+            _client = client;
             _requestBuilder = new ApiRequestBuilder();
         }
 
-        public void LoadApiObjects()
+        /// <summary>
+        /// Загружает синхронизируемые объекты.
+        /// </summary>
+        public void LoadSyncObjects()
         {
             _apiProjects.Clear();
             _apiGroups.Clear();
@@ -34,20 +45,20 @@ namespace SyncConsoleApp
 #warning Как обрабатывать дубли проектов?
 
             var getProjects = _requestBuilder.GetProjectsRequest();
-            var projects = _client.GetObjects<ApiProject>(getProjects);
+            var projects = _client.GetResponseObjects<ApiProject>(getProjects);
 
             _apiProjects.AddRange(projects);
 
             var keywords = projects
                 .Select(p => _requestBuilder.GetKeywordsRequest(p.Id, false))
-                .SelectMany(p => _client.GetObjects<ApiKeyword>(p))
+                .SelectMany(p => _client.GetResponseObjects<ApiKeyword>(p))
                 .ToList();
 
             // не удалось найти признак вкл/выкл у группы, поэтому
             // дополнительным запросом собираем id'шники включеных групп
             var enabledKeywords = projects
                 .Select(p => _requestBuilder.GetKeywordsRequest(p.Id, true))
-                .SelectMany(p => _client.GetObjects<ApiKeyword>(p).Select(k => k.GroupId))
+                .SelectMany(p => _client.GetResponseObjects<ApiKeyword>(p).Select(k => k.GroupId))
                 .Distinct()
                 .ToList();
 
@@ -60,6 +71,12 @@ namespace SyncConsoleApp
 
         #region Синхронизация проектов
 
+        /// <summary>
+        /// Выполняет синхронизацию списка проектов
+        /// и свойств относящихся непосредственно к проектам.
+        /// </summary>
+        /// <param name="projects"></param>
+        /// <returns></returns>
         public int SyncProjects(IEnumerable<XmlProject> projects)
         {
             int counter = 0;
@@ -71,6 +88,11 @@ namespace SyncConsoleApp
             return counter;
         }
 
+        /// <summary>
+        /// Добавляет недостающие проекты.
+        /// </summary>
+        /// <param name="projects"></param>
+        /// <returns></returns>
         public int AddProjects(IEnumerable<XmlProject> projects)
         {
             var createProjects = SyncHelper.GetItemsForCreate(
@@ -80,7 +102,7 @@ namespace SyncConsoleApp
             foreach (var proj in createProjects)
             {
                 var request = _requestBuilder.GetAddProjectRequest(proj.Site);
-                var projectId = _client.GetIdResponse(request);
+                var projectId = _client.GetIntResponse(request);
 
                 var newProject = new ApiProject() { Id = projectId, Site = proj.Site, On = 0 };
                 _apiProjects.Add(newProject);
@@ -89,6 +111,11 @@ namespace SyncConsoleApp
             return createProjects.Count;
         }
 
+        /// <summary>
+        /// Удаляет лишние проекты.
+        /// </summary>
+        /// <param name="projects"></param>
+        /// <returns></returns>
         public int DeleteProjects(IEnumerable<XmlProject> projects)
         {
             var dropProjects = SyncHelper.GetItemsForDelete(
@@ -112,6 +139,11 @@ namespace SyncConsoleApp
             return counter;
         }
 
+        /// <summary>
+        /// Обновляет свойства проектов.
+        /// </summary>
+        /// <param name="projects"></param>
+        /// <returns></returns>
         public int UpdateProjectsProperties(IEnumerable<XmlProject> projects)
         {
             var updateProjects = SyncHelper.GetItemsForUpdate(
@@ -148,6 +180,12 @@ namespace SyncConsoleApp
 
         #region Синхронизация групп
 
+        /// <summary>
+        /// Выполняет синхронизацию групп проектов
+        /// и свойств относящихся непосредственно к группам.
+        /// </summary>
+        /// <param name="projects"></param>
+        /// <returns></returns>
         public int SyncGroups(IEnumerable<XmlProject> projects)
         {
             int counter = 0;
@@ -159,29 +197,34 @@ namespace SyncConsoleApp
             return counter;
         }
 
+        /// <summary>
+        /// Добавляет недостающие проекты.
+        /// </summary>
+        /// <param name="projects"></param>
+        /// <returns></returns>
         public int AddGroups(IEnumerable<XmlProject> projects)
         {
             var syncProjects = GetSyncProjectGroups(projects);
 
             int counter = 0;
 
-            foreach (var sync in syncProjects)
+            foreach (var proj in syncProjects)
             {
                 var createGroups = SyncHelper.GetItemsForCreate(
-                    sync.XmlObjects,
-                    sync.ApiObjects,
+                    proj.XmlObjects,
+                    proj.ApiObjects,
                     g => GetGroupNameKey(g.Name),
                     g => GetGroupNameKey(g.GroupName));
 
                 foreach (var group in createGroups)
                 {
                     var request = _requestBuilder.GetAddKeywordGroupRequest(
-                        sync.ParentId, group.Name, group.Enabled);
+                        proj.ParentId, group.Name, group.Enabled);
 
-                    var groupId = _client.GetIdResponse(request);
+                    var groupId = _client.GetIntResponse(request);
 
                     var newGroup = new SyncKeywordGroup(
-                        sync.ParentId, groupId, group.Name, group.Enabled);
+                        proj.ParentId, groupId, group.Name, group.Enabled);
 
                     _apiGroups.Add(newGroup);
                     ++counter;
@@ -191,13 +234,18 @@ namespace SyncConsoleApp
             return counter;
         }
 
+        /// <summary>
+        /// Удаляет лишние проекты.
+        /// </summary>
+        /// <param name="projects"></param>
+        /// <returns></returns>
         public int DeleteGroups(IEnumerable<XmlProject> projects)
         {
-            var syncGroups = GetSyncProjectGroups(projects);
+            var syncProjects = GetSyncProjectGroups(projects);
 
             int counter = 0;
 
-            foreach (var sync in syncGroups)
+            foreach (var sync in syncProjects)
             {
                 var dropGroups = SyncHelper.GetItemsForDelete(
                     sync.XmlObjects,
@@ -223,6 +271,11 @@ namespace SyncConsoleApp
             return counter;
         }
 
+        /// <summary>
+        /// Обновляет свойства проектов.
+        /// </summary>
+        /// <param name="projects"></param>
+        /// <returns></returns>
         public int UpdateGroupsProperties(IEnumerable<XmlProject> projects)
         {
             var syncGroupPair = GetSyncGroupsPair(projects);
@@ -257,6 +310,12 @@ namespace SyncConsoleApp
 
         #region Синхронизация фраз
 
+        /// <summary>
+        /// Выполняет синхронизацию фраз
+        /// и свойств относящихся непосредственно к фразам.
+        /// </summary>
+        /// <param name="projects"></param>
+        /// <returns></returns>
         public int SyncKeywords(IEnumerable<XmlProject> projects)
         {
             int counter = 0;
@@ -268,6 +327,11 @@ namespace SyncConsoleApp
             return counter;
         }
 
+        /// <summary>
+        /// Добавляет недостающие фразы.
+        /// </summary>
+        /// <param name="projects"></param>
+        /// <returns></returns>
         public int AddKeywords(IEnumerable<XmlProject> projects)
         {
             var syncGroupPair = GetSyncGroupsPair(projects);
@@ -304,7 +368,7 @@ namespace SyncConsoleApp
                     counter += addKeywords.Count;
                 }
 
-                // добавление по одной фраз с трагетом, чтобы получить их id
+                // добавление по одной фразе с таргетом, чтобы получать их id
                 addKeywords = createWords
                     .Where(k => !string.IsNullOrEmpty(k.TargetUrl))
                     .ToList();
@@ -314,7 +378,7 @@ namespace SyncConsoleApp
                     var request = _requestBuilder.GetAddKeywordRequest(
                         apiGroup.ProjectId, apiGroup.Id, word.Phrase);
 
-                    var phraseId = _client.GetIdResponse(request);
+                    var phraseId = _client.GetIntResponse(request);
                     var keyword = apiGroup.AddKeyword(word.Phrase);
                     keyword.Id = phraseId;
 
@@ -325,6 +389,11 @@ namespace SyncConsoleApp
             return counter;
         }
 
+        /// <summary>
+        /// Удаляет лишние ключевые фразы.
+        /// </summary>
+        /// <param name="projects"></param>
+        /// <returns></returns>
         public int DeleteKeywords(IEnumerable<XmlProject> projects)
         {
             var syncGroupPair = GetSyncGroupsPair(projects);
@@ -346,6 +415,7 @@ namespace SyncConsoleApp
 
                     if (res)
                     {
+                        groupPair.Item2.RemoveKeyword(word);
                         ++counter;
                     }
                 }
@@ -353,6 +423,12 @@ namespace SyncConsoleApp
 
             return counter;
         }
+
+        /// <summary>
+        /// Обновляет свойства ключевых фраз.
+        /// </summary>
+        /// <param name="projects"></param>
+        /// <returns></returns>
 
         public int UpdateKeywordsProperties(IEnumerable<XmlProject> projects)
         {
@@ -370,15 +446,18 @@ namespace SyncConsoleApp
 
                 foreach (var wordPair in pairs)
                 {
-                    if (GetSiteKey(wordPair.Item1.TargetUrl) != GetSiteKey(wordPair.Item2.Target))
+                    var apiKeyword = wordPair.Item2;
+
+                    if (GetSiteKey(wordPair.Item1.TargetUrl) != GetSiteKey(apiKeyword.Target))
                     {
                         var request = _requestBuilder.GetUpdateKeywordTargetRequest(
-                            wordPair.Item2.Id, wordPair.Item1.TargetUrl);
+                            apiKeyword.Id, wordPair.Item1.TargetUrl);
 
                         var res = _client.GetBoolResponse(request);
 
                         if (res)
                         {
+                            apiKeyword.Target = wordPair.Item1.TargetUrl;
                             ++counter;
                         }
                     }
@@ -429,7 +508,6 @@ namespace SyncConsoleApp
                     pair.Item2.Id, pair.Item1.KeywordGroups, projectGroups);
             }
         }
-
 
         private static string GetSiteKey(string site)
         {

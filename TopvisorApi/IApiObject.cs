@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace Topvisor.Api
 {
+    /// <summary>
+    /// Интерфейс объекта Api.
+    /// </summary>
     public interface IApiObject
     {
         /// <summary>

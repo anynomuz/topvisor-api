@@ -31,26 +31,12 @@ namespace SyncConsoleApp
             }
 
             //------
+
             var config = new ClientConfig(apiKey);
             var client = new ApiClient(config);
 
-            ////var rb = new ApiRequestBuilder();
-            
-
-            ////var request = rb.GetGroupsRequest(399214, false);
-            ////var res = client.GetObjects<ApiKeywordGroup>(request);
-
-            ////return;
-
-            ////var syncClient = new SyncClient(config);
-
-            ////syncClient.LoadApiObjects();
-            ////syncClient.AddProjects(registry.Projects);
-            ////syncClient.UpdateProjects(registry.Projects);
-            ////syncClient.DeleteProjects(registry.Projects);
-
-            var syncClient = new SyncClient(config);
-            syncClient.LoadApiObjects();
+            var syncClient = new SyncClient(client);
+            syncClient.LoadSyncObjects();
 
             syncClient.SyncProjects(registry.Projects);
             syncClient.SyncGroups(registry.Projects);

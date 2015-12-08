@@ -7,8 +7,13 @@ using Topvisor.Api;
 
 namespace SyncConsoleApp
 {
-    public class SyncKeywordGroup : IApiObject
+    /// <summary>
+    /// Группа фраз для задач синхронизации.
+    /// </summary>
+    internal class SyncKeywordGroup : IApiObject
     {
+        private readonly List<ApiKeyword> _keywords;
+
         public SyncKeywordGroup(IEnumerable<ApiKeyword> keywords, bool enabled)
 	    {
             var keyword = keywords.FirstOrDefault();
@@ -21,8 +26,7 @@ namespace SyncConsoleApp
             }
 
             Enabled = enabled;
-            Keywords = new List<ApiKeyword>();
-            Keywords.AddRange(keywords);
+            _keywords = new List<ApiKeyword>(keywords);
 	    }
 
         public SyncKeywordGroup(int projectId, int groupId, string groupName, bool enabled)
@@ -32,18 +36,21 @@ namespace SyncConsoleApp
             GroupName = groupName;
             Enabled = enabled;
 
-            Keywords = new List<ApiKeyword>();
+            _keywords = new List<ApiKeyword>();
         }
-
-        public int ProjectId { get; set; }
 
         public int Id { get; set; }
 
-        public string GroupName { get; set; }
-
         public bool Enabled { get; set; }
 
-        public List<ApiKeyword> Keywords { get; private set; }
+        public int ProjectId { get; private set; }
+
+        public string GroupName { get; private set; }
+
+        public IEnumerable<ApiKeyword> Keywords
+        {
+            get { return _keywords; }
+        }
 
         public ApiKeyword AddKeyword(string phrase)
         {
@@ -56,8 +63,13 @@ namespace SyncConsoleApp
                     Phrase = phrase,
                 };
 
-            Keywords.Add(keyword);
+            _keywords.Add(keyword);
             return keyword;
+        }
+
+        public bool RemoveKeyword(ApiKeyword keyword)
+        {
+            return _keywords.Remove(keyword);
         }
     }
 }

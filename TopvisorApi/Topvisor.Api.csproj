@@ -54,6 +54,7 @@
     <Compile Include="ApiResponse.cs" />
     <Compile Include="ApiKeyword.cs" />
     <Compile Include="ApiProject.cs" />
+    <Compile Include="IApiClient.cs" />
     <Compile Include="IApiObject.cs" />
     <Compile Include="IValidable.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

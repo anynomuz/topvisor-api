@@ -8,6 +8,9 @@ using Topvisor.Api;
 
 namespace SyncConsoleApp
 {
+    /// <summary>
+    /// Вспомогательные методы синхронизации.
+    /// </summary>
     public class SyncHelper
     {
         public static IEnumerable<Tuple<T1, T2>> GetItemsForUpdate<T1, T2, K>(

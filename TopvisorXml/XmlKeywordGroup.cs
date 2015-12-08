@@ -8,7 +8,7 @@ using System.Xml.Serialization;
 
 namespace Topvisor.Xml
 {
-    [DebuggerDisplay("Name = {Name}")]
+    [DebuggerDisplay("Name = {Name}, Enabled = {Enabled}")]
     public class XmlKeywordGroup
     {
         public XmlKeywordGroup(string name, bool enabled = true)
