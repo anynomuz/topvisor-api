@@ -43,7 +43,6 @@ namespace Topvisor.Api
             this.KeyIntAboveZero("id");
             this.KeyIntAboveZero("phrase_id");
             this.KeyIntAboveZero("project_id");
-            this.KeyIntAboveZero("group_id");
 
             this.KeyStringIsNoEmpty("group_name");
             this.KeyStringIsNoEmpty("phrase");

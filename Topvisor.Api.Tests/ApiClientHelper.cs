@@ -11,6 +11,7 @@ namespace Topvisor.Api.Tests
         private const string _debugApiKey = "768a9f24525eca4b84fe";
 
         private static ApiClient _realApiClient;
+        private static ApiRequestBuilder _builder = new ApiRequestBuilder();
 
         public static ApiClient GetRealApiClient()
         {
@@ -26,6 +27,25 @@ namespace Topvisor.Api.Tests
         public static MockApiClient GetMockApiClient()
         {
             return new MockApiClient();
+        }
+
+        public static IEnumerable<ApiProject> GetProjects(bool onlyEnabled = true)
+        {
+            var client = ApiClientHelper.GetRealApiClient();
+            var request = _builder.GetProjectsRequest();
+
+            var projects =  client.GetResponseObjects<ApiProject>(request);
+
+            return (onlyEnabled)
+                ? projects.Where(p => p.On >= 0).ToList()
+                : projects.ToList();
+        }
+
+        public static ApiProject GetFirstProject(int? id = null)
+        {
+            return (id == null)
+                ? GetProjects().First()
+                : GetProjects().First(p => p.Id == (int)id);
         }
     }
 }

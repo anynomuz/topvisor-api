@@ -456,11 +456,14 @@ namespace SyncAppConsole
 
                         var res = _client.GetBoolResponse(request);
 
-                        if (res)
-                        {
-                            apiKeyword.Target = wordPair.Item1.TargetUrl;
-                            ++counter;
-                        }
+                        ////if (res)
+                        ////{
+
+                        // BUG: При установке таргета возвращает всегда false
+                        apiKeyword.Target = wordPair.Item1.TargetUrl;
+                        ++counter;
+
+                        ////}
                     }
                 }
             }

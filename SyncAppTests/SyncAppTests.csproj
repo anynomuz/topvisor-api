@@ -3,11 +3,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{D525FCD8-ECAB-4463-A4A7-10F41C39EA99}</ProjectGuid>
+    <ProjectGuid>{9028C984-F522-40F9-BC34-686E8A85924B}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Topvisor.Api.Tests</RootNamespace>
-    <AssemblyName>Topvisor.Api.Tests</AssemblyName>
+    <RootNamespace>SyncAppTests</RootNamespace>
+    <AssemblyName>SyncAppTests</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -35,10 +35,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="RestSharp, Version=105.2.3.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\RestSharp.105.2.3\lib\net45\RestSharp.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System" />
   </ItemGroup>
   <Choose>
@@ -54,22 +50,14 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="ApiClientHelper.cs" />
-    <Compile Include="ApiClientTests.cs" />
-    <Compile Include="ApiRequestGroupsTests.cs" />
-    <Compile Include="ApiRequestKeywordsTests.cs" />
-    <Compile Include="ApiRequestProjectsTests.cs" />
-    <Compile Include="MockApiClient.cs" />
+    <Compile Include="SyncClientTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\TopvisorApi\Topvisor.Api.csproj">
-      <Project>{d84aa33e-5ba3-43ef-9af7-d8b22f01e6b4}</Project>
-      <Name>Topvisor.Api</Name>
+    <ProjectReference Include="..\SyncConsoleApp\SyncAppConsole.csproj">
+      <Project>{ccd7aa7a-ad53-47e9-ab62-03ade3d10079}</Project>
+      <Name>SyncAppConsole</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">

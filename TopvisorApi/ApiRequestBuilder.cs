@@ -99,7 +99,11 @@ namespace Topvisor.Api
 
             request.AddParameter("oper", "add");
             request.AddParameter("post[project_id]", projectId);
-            request.AddParameter("post[group_id]", groupId);
+
+            if (groupId > 0)
+            {
+                request.AddParameter("post[group_id]", groupId);
+            }
 
             request.AddParameter("post[phrase]", phrase);
 
@@ -116,7 +120,11 @@ namespace Topvisor.Api
             request.AddParameter("method", "import", ParameterType.QueryString);
 
             request.AddParameter("project_id", projectId, ParameterType.GetOrPost);
-            request.AddParameter("group_id", groupId, ParameterType.GetOrPost);
+
+            if (groupId > 0)
+            {
+                request.AddParameter("group_id", groupId, ParameterType.GetOrPost);
+            }
 
             request.AddParameter(
                 "phrases", string.Join("|||", phrases), ParameterType.GetOrPost);

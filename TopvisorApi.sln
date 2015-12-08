@@ -15,6 +15,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Topvisor.Xml.Tests", "Topvi
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UnitTests", "UnitTests", "{C7B981A7-7B66-4C48-A64E-6011DBB2A4D2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SyncAppTests", "SyncAppTests\SyncAppTests.csproj", "{9028C984-F522-40F9-BC34-686E8A85924B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -41,6 +43,10 @@ Global
 		{4CED618C-3340-4999-BF67-AB9976EC4AEC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4CED618C-3340-4999-BF67-AB9976EC4AEC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4CED618C-3340-4999-BF67-AB9976EC4AEC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9028C984-F522-40F9-BC34-686E8A85924B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9028C984-F522-40F9-BC34-686E8A85924B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9028C984-F522-40F9-BC34-686E8A85924B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9028C984-F522-40F9-BC34-686E8A85924B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -48,5 +54,6 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{D525FCD8-ECAB-4463-A4A7-10F41C39EA99} = {C7B981A7-7B66-4C48-A64E-6011DBB2A4D2}
 		{4CED618C-3340-4999-BF67-AB9976EC4AEC} = {C7B981A7-7B66-4C48-A64E-6011DBB2A4D2}
+		{9028C984-F522-40F9-BC34-686E8A85924B} = {C7B981A7-7B66-4C48-A64E-6011DBB2A4D2}
 	EndGlobalSection
 EndGlobal
