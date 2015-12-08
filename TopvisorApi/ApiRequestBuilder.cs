@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace Topvisor.Api
 {
     /// <summary>
-    /// Построитель запросов к api.
+    /// Построитель запросов к Api.
     /// </summary>
     /// <remarks>
     /// Форматы запросов в документации: https://topvisor.ru/api
@@ -21,16 +21,16 @@ namespace Topvisor.Api
 
         #region Проекты
 
-        public IRestRequest GetProjectsRequest()
+        public ApiRequest<IEnumerable<ApiProject>> GetProjectsRequest()
         {
             var request = new RestRequest(Method.GET);
             request.AddParameter("module", "mod_projects");
             request.AddParameter("oper", "get");
 
-            return request;
+            return new ApiRequest<IEnumerable<ApiProject>>(request);
         }
 
-        public IRestRequest GetAddProjectRequest(string site, int on = 0)
+        public ApiRequestMessage<int> GetAddProjectRequest(string site, int on = 0)
         {
             var request = new RestRequest(Method.GET);
             request.AddParameter("module", "mod_projects");
@@ -39,10 +39,10 @@ namespace Topvisor.Api
             request.AddParameter("post[site]", site);
             request.AddParameter("post[on]", on);
 
-            return request;
+            return new ApiRequestMessage<int>(request);
         }
 
-        public IRestRequest GetDeleteProjectRequest(int id)
+        public ApiRequestMessage<int> GetDeleteProjectRequest(int id)
         {
             var request = new RestRequest(Method.GET);
             request.AddParameter("module", "mod_projects");
@@ -50,10 +50,10 @@ namespace Topvisor.Api
 
             request.AddParameter("post[id]", id);
 
-            return request;
+            return new ApiRequestMessage<int>(request);
         }
 
-        public IRestRequest GetUpdateProjectRequest(int id, int on)
+        public ApiRequestMessage<int> GetUpdateProjectRequest(int id, int on)
         {
             var request = new RestRequest(Method.GET);
             request.AddParameter("module", "mod_projects");
@@ -62,14 +62,14 @@ namespace Topvisor.Api
             request.AddParameter("post[id]", id);
             request.AddParameter("post[on]", on);
 
-            return request;
+            return new ApiRequestMessage<int>(request);
         }
 
         #endregion
 
         #region Фразы
 
-        public IRestRequest GetKeywordsRequest(
+        public ApiRequest<IEnumerable<ApiKeyword>> GetKeywordsRequest(
             int projectId, bool onlyEnabled, int groupId = -1)
         {
             var request = new RestRequest(Method.GET);
@@ -88,10 +88,10 @@ namespace Topvisor.Api
                 request.AddParameter("post[group_id]", groupId);
             }
 
-            return request;
+            return new ApiRequest<IEnumerable<ApiKeyword>>(request);
         }
 
-        public IRestRequest GetAddKeywordRequest(
+        public ApiRequestMessage<int> GetAddKeywordRequest(
             int projectId, string phrase, int groupId = -1)
         {
             var request = new RestRequest(Method.GET);
@@ -107,10 +107,10 @@ namespace Topvisor.Api
 
             request.AddParameter("post[phrase]", phrase);
 
-            return request;
+            return new ApiRequestMessage<int>(request);
         }
 
-        public IRestRequest GetAddKeywordsRequest(
+        public ApiRequestMessage<List<int>> GetAddKeywordsRequest(
             int projectId, IEnumerable<string> phrases, int groupId = -1)
         {
             var request = new RestRequest(Method.POST);
@@ -129,10 +129,10 @@ namespace Topvisor.Api
             request.AddParameter(
                 "phrases", string.Join("|||", phrases), ParameterType.GetOrPost);
 
-            return request;
+            return new ApiRequestMessage<List<int>>(request);
         }
 
-        public IRestRequest GetUpdateKeywordTargetRequest(int id, string url)
+        public ApiRequestMessage<int> GetUpdateKeywordTargetRequest(int id, string url)
         {
             var request = new RestRequest(Method.GET);
             request.AddParameter("module", "mod_keywords");
@@ -141,10 +141,10 @@ namespace Topvisor.Api
             request.AddParameter("post[id]", id);
             request.AddParameter("post[target]", url);
 
-            return request;
+            return new ApiRequestMessage<int>(request);
         }
 
-        public IRestRequest GetDeleteKeywordRequest(int id)
+        public ApiRequestMessage<int> GetDeleteKeywordRequest(int id)
         {
             var request = new RestRequest(Method.GET);
             request.AddParameter("module", "mod_keywords");
@@ -152,14 +152,14 @@ namespace Topvisor.Api
             request.AddParameter("oper", "del");
             request.AddParameter("post[id]", id);
 
-            return request;
+            return new ApiRequestMessage<int>(request);
         }
 
         #endregion
 
         #region Группы
 
-        public IRestRequest GetAddKeywordGroupRequest(
+        public ApiRequestMessage<int> GetAddKeywordGroupRequest(
             int projectId, string name, bool enabled = true)
         {
             var request = new RestRequest(Method.GET);
@@ -171,10 +171,10 @@ namespace Topvisor.Api
             request.AddParameter("post[name]", name);
             request.AddParameter("post[on]", enabled ? 1 : 0);
 
-            return request;
+            return new ApiRequestMessage<int>(request);
         }
 
-        public IRestRequest GetDeleteKeywordGroupRequest(
+        public ApiRequestMessage<int> GetDeleteKeywordGroupRequest(
             int projectId, int groupId)
         {
             var request = new RestRequest(Method.GET);
@@ -185,10 +185,10 @@ namespace Topvisor.Api
             request.AddParameter("post[project_id]", projectId);
             request.AddParameter("post[id]", groupId);
 
-            return request;
+            return new ApiRequestMessage<int>(request);
         }
 
-        public IRestRequest GetUpdateKeywordGroupRequest(
+        public ApiRequestMessage<int> GetUpdateKeywordGroupRequest(
             int projectId, int groupId, bool enabled)
         {
             var request = new RestRequest(Method.GET);
@@ -200,7 +200,7 @@ namespace Topvisor.Api
             request.AddParameter("post[id]", groupId);
             request.AddParameter("post[on]", enabled ? 1 : 0);
 
-            return request;
+            return new ApiRequestMessage<int>(request);
         }
 
         #endregion

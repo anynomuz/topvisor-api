@@ -16,7 +16,7 @@ namespace Topvisor.Api.Tests
         public IEnumerable<ApiKeyword> GetKeywords(int projectId)
         {
             var request = _builder.GetKeywordsRequest((int)projectId, false);
-            return _client.GetResponseObjects<ApiKeyword>(request);
+            return _client.GetObjects<ApiKeyword>(request);
         }
 
         [TestMethod]
@@ -34,7 +34,7 @@ namespace Topvisor.Api.Tests
             var project = ApiClientHelper.GetFirstProject();
 
             var request = _builder.GetAddKeywordRequest(project.Id, testPhrase);
-            var id = _client.GetIntResponse(request);
+            var id = _client.GetMessageResult(request);
 
             Assert.IsTrue(id > 0, "id > 0");
 
@@ -58,7 +58,7 @@ namespace Topvisor.Api.Tests
             var project = ApiClientHelper.GetFirstProject();
 
             var request = _builder.GetAddKeywordsRequest(project.Id, addKeywords);
-            _client.GetResponseResult<List<int>>(request);
+            _client.GetMessageResult(request);
 
             var keywords = GetKeywords(project.Id);
 
@@ -75,7 +75,7 @@ namespace Topvisor.Api.Tests
             var keyword = GetKeywords(project.Id).First();
 
             var request = _builder.GetDeleteKeywordRequest(keyword.Id);
-            var res = _client.GetBoolResponse(request);
+            var res = _client.GetBoolResult(request);
 
             Assert.IsTrue(res);
 
@@ -93,7 +93,7 @@ namespace Topvisor.Api.Tests
             var url = "http://ya.ru/phrase" + Environment.TickCount;
 
             var request = _builder.GetUpdateKeywordTargetRequest(keyword.Id, url);
-            var res = _client.GetBoolResponse(request);
+            var res = _client.GetBoolResult(request);
 
             // BUG: непонятно почему, но таргет устанавливается, а возвращает 0
             //Assert.IsTrue(res);

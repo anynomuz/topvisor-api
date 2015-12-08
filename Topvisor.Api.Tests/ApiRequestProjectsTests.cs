@@ -25,7 +25,7 @@ namespace Topvisor.Api.Tests
             var site = "http://ya.ru";
 
             var request = _builder.GetAddProjectRequest(site);
-            var projectId = _client.GetIntResponse(request);
+            var projectId = _client.GetMessageResult(request);
 
             Assert.IsTrue(projectId >= 0, "id >= 0");
 
@@ -40,7 +40,7 @@ namespace Topvisor.Api.Tests
             var dropProject = ApiClientHelper.GetFirstProject();
 
             var request = _builder.GetDeleteProjectRequest(dropProject.Id);
-            var res = _client.GetBoolResponse(request);
+            var res = _client.GetBoolResult(request);
 
             Assert.IsTrue(res);
 
@@ -56,7 +56,7 @@ namespace Topvisor.Api.Tests
             var newState = (project.On == 0) ? -1 : 0;
 
             var request = _builder.GetUpdateProjectRequest(project.Id, newState);
-            var res = _client.GetBoolResponse(request);
+            var res = _client.GetBoolResult(request);
 
             Assert.IsTrue(res);
 

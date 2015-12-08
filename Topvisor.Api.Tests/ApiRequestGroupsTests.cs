@@ -20,7 +20,7 @@ namespace Topvisor.Api.Tests
 
             var project = ApiClientHelper.GetFirstProject();
             var request = _builder.GetAddKeywordGroupRequest(project.Id, groupName);
-            var id = _client.GetIntResponse(request);
+            var id = _client.GetMessageResult(request);
 
             Assert.IsTrue(id > 0, "id > 0");
         }

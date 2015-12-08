@@ -34,7 +34,7 @@ namespace Topvisor.Api.Tests
             var client = ApiClientHelper.GetRealApiClient();
             var request = _builder.GetProjectsRequest();
 
-            var projects =  client.GetResponseObjects<ApiProject>(request);
+            var projects =  client.GetObjects<ApiProject>(request);
 
             return (onlyEnabled)
                 ? projects.Where(p => p.On >= 0).ToList()

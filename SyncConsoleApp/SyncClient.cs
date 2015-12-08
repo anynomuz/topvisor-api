@@ -45,20 +45,20 @@ namespace SyncAppConsole
 #warning Как обрабатывать дубли проектов?
 
             var getProjects = _requestBuilder.GetProjectsRequest();
-            var projects = _client.GetResponseObjects<ApiProject>(getProjects);
+            var projects = _client.GetObjects<ApiProject>(getProjects);
 
             _apiProjects.AddRange(projects);
 
             var keywords = projects
                 .Select(p => _requestBuilder.GetKeywordsRequest(p.Id, false))
-                .SelectMany(p => _client.GetResponseObjects<ApiKeyword>(p))
+                .SelectMany(p => _client.GetObjects<ApiKeyword>(p))
                 .ToList();
 
             // не удалось найти признак вкл/выкл у группы, поэтому
             // дополнительным запросом собираем id'шники включеных групп
             var enabledKeywords = projects
                 .Select(p => _requestBuilder.GetKeywordsRequest(p.Id, true))
-                .SelectMany(p => _client.GetResponseObjects<ApiKeyword>(p).Select(k => k.GroupId))
+                .SelectMany(p => _client.GetObjects<ApiKeyword>(p).Select(k => k.GroupId))
                 .Distinct()
                 .ToList();
 
@@ -102,7 +102,7 @@ namespace SyncAppConsole
             foreach (var proj in createProjects)
             {
                 var request = _requestBuilder.GetAddProjectRequest(proj.Site);
-                var projectId = _client.GetIntResponse(request);
+                var projectId = _client.GetMessageResult(request);
 
                 var newProject = new ApiProject() { Id = projectId, Site = proj.Site, On = 0 };
                 _apiProjects.Add(newProject);
@@ -127,7 +127,7 @@ namespace SyncAppConsole
             foreach (var proj in dropProjects)
             {
                 var request = _requestBuilder.GetDeleteProjectRequest(proj.Id);
-                var res = _client.GetBoolResponse(request);
+                var res = _client.GetBoolResult(request);
 
                 if (res)
                 {
@@ -163,7 +163,7 @@ namespace SyncAppConsole
                     var request = _requestBuilder.GetUpdateProjectRequest(
                         apiProject.Id, stateOn);
 
-                    var res = _client.GetBoolResponse(request);
+                    var res = _client.GetBoolResult(request);
 
                     if (res)
                     {
@@ -221,7 +221,7 @@ namespace SyncAppConsole
                     var request = _requestBuilder.GetAddKeywordGroupRequest(
                         proj.ParentId, group.Name, group.Enabled);
 
-                    var groupId = _client.GetIntResponse(request);
+                    var groupId = _client.GetMessageResult(request);
 
                     var newGroup = new SyncKeywordGroup(
                         proj.ParentId, groupId, group.Name, group.Enabled);
@@ -258,7 +258,7 @@ namespace SyncAppConsole
                     var request = _requestBuilder.GetDeleteKeywordGroupRequest(
                         sync.ParentId, group.Id);
 
-                    var res = _client.GetBoolResponse(request);
+                    var res = _client.GetBoolResult(request);
 
                     if (res)
                     {
@@ -293,7 +293,7 @@ namespace SyncAppConsole
                     var request = _requestBuilder.GetUpdateKeywordGroupRequest(
                         apiGroup.ProjectId, apiGroup.Id, xmlGroup.Enabled);
 
-                    var res = _client.GetBoolResponse(request);
+                    var res = _client.GetBoolResult(request);
 
                     if (res)
                     {
@@ -358,7 +358,7 @@ namespace SyncAppConsole
                     var request = _requestBuilder.GetAddKeywordsRequest(
                         apiGroup.ProjectId, addKeywords.Select(p => p.Phrase), apiGroup.Id);
 
-                    var res = _client.GetResponseResult<List<int>>(request);
+                    var res = _client.GetMessageResult(request);
 
                     foreach (var word in addKeywords)
                     {
@@ -378,7 +378,7 @@ namespace SyncAppConsole
                     var request = _requestBuilder.GetAddKeywordRequest(
                         apiGroup.ProjectId, word.Phrase, apiGroup.Id);
 
-                    var phraseId = _client.GetIntResponse(request);
+                    var phraseId = _client.GetMessageResult(request);
                     var keyword = apiGroup.AddKeyword(word.Phrase);
                     keyword.Id = phraseId;
 
@@ -412,7 +412,7 @@ namespace SyncAppConsole
                 foreach (var word in dropWords)
                 {
                     var request = _requestBuilder.GetDeleteKeywordRequest(word.Id);
-                    var res = _client.GetBoolResponse(request);
+                    var res = _client.GetBoolResult(request);
 
                     if (res)
                     {
@@ -454,7 +454,7 @@ namespace SyncAppConsole
                         var request = _requestBuilder.GetUpdateKeywordTargetRequest(
                             apiKeyword.Id, wordPair.Item1.TargetUrl);
 
-                        var res = _client.GetBoolResponse(request);
+                        var res = _client.GetBoolResult(request);
 
                         ////if (res)
                         ////{

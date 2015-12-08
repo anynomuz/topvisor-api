@@ -13,7 +13,7 @@ namespace Topvisor.Api
     /// <summary>
     /// Клиент для доступа к Api Топвизора.
     /// </summary>
-    public class ApiClient : Topvisor.Api.IApiClient
+    public class ApiClient : IApiClient
     {
         private readonly IRestClient _client;
         private readonly IDeserializer _deserailizer;
@@ -36,21 +36,22 @@ namespace Topvisor.Api
             _deserailizer = new JsonDeserializer();
         }
 
+
         /// <summary>
         /// Возвращает ответ в виде коллекции объектов.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="request"></param>
+        /// <typeparam name="T">Тип возвращаемых объектов.</typeparam>
+        /// <param name="request">Запрос на получение объектов.</param>
         /// <returns></returns>
-        public IEnumerable<T> GetResponseObjects<T>(IRestRequest request)
+        public IEnumerable<T> GetObjects<T>(ApiRequest<IEnumerable<T>> request)
             where T : IApiObject
         {
             WaitBeforeRequestIfNeeded();
-            var response = _client.Execute<List<T>>(request);
+            var response = _client.Execute<List<T>>(request.Request);
 
             ThrowIfError(response);
 
-            var apiResponse = TryGetResponseMessage(response);
+            var apiResponse = TryGetMessage(response);
             ThrowIfError(apiResponse);
 
             var list = response.Data as IEnumerable<IValidable>;
@@ -67,41 +68,44 @@ namespace Topvisor.Api
         }
 
         /// <summary>
+        /// Возвращает типизированное стандартное сообщение ответа.
+        /// </summary>
+        /// <typeparam name="T">Тип результата.</typeparam>
+        /// <param name="request">Запрос на получение сообщения.</param>
+        /// <returns></returns>
+        public ApiMessageResult<T> GetMessage<T>(ApiRequestMessage<T> request)
+            where T : new()
+        {
+            WaitBeforeRequestIfNeeded();
+            var response = _client.Execute<ApiMessageResult<T>>(request.Request);
+
+            ThrowIfError(response);
+            return response.Data;
+        }
+
+        /// <summary>
         /// Возвращает типизованное значение результата
         /// из стандартного сообщения ответа.
         /// </summary>
         /// <typeparam name="T">Тип результата.</typeparam>
-        /// <param name="request"></param>
+        /// <param name="request">Запрос на получение сообщения.</param>
         /// <returns></returns>
-        public T GetResponseResult<T>(IRestRequest request)
+        public T GetMessageResult<T>(ApiRequestMessage<T> request)
+            where T : new()
         {
-            WaitBeforeRequestIfNeeded();
-            var response = _client.Execute<ApiResponseResult<T>>(request);
-
-            ThrowIfError(response);
-            return response.Data.Result;
-        }
-
-        /// <summary>
-        /// Возвращает целочисленное значение результата
-        /// из стандартного сообщения ответа.
-        /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
-        public int GetIntResponse(IRestRequest request)
-        {
-            return GetResponseResult<int>(request);
+            var message = GetMessage(request);
+            return message.Result;
         }
 
         /// <summary>
         /// Возвращает булево значение результата.
         /// из стандартного сообщения ответа.
         /// </summary>
-        /// <param name="request"></param>
+        /// <param name="request">Запрос на получение сообщения.</param>
         /// <returns></returns>
-        public bool GetBoolResponse(IRestRequest request)
+        public bool GetBoolResult(ApiRequestMessage<int> request)
         {
-            return GetResponseResult<int>(request) > 0;
+            return GetMessageResult(request) > 0;
         }
 
         /// <summary>
@@ -134,24 +138,24 @@ namespace Topvisor.Api
                     response.ErrorException);
             }
 
-            var apiResponse = response.Data as ApiResponse;
+            var apiResponse = response.Data as ApiMessage;
             ThrowIfError(apiResponse);
         }
 
-        private ApiResponse TryGetResponseMessage<T>(IRestResponse<T> response)
+        private ApiMessage TryGetMessage<T>(IRestResponse<T> response)
         {
             try
             {
-                return _deserailizer.Deserialize<ApiResponse>(response);
+                return _deserailizer.Deserialize<ApiMessage>(response);
             }
             catch (Exception)
             {
                 // некрасиво, но куда деваться..
-                return response.Data as ApiResponse;
+                return response.Data as ApiMessage;
             }
         }
 
-        private static void ThrowIfError(ApiResponse apiResponse)
+        private static void ThrowIfError(ApiMessage apiResponse)
         {
             if ((apiResponse != null) && apiResponse.Error)
             {

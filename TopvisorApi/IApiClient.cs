@@ -7,37 +7,39 @@ namespace Topvisor.Api
     public interface IApiClient
     {
         /// <summary>
+        /// Возвращает ответ в виде коллекции объектов.
+        /// </summary>
+        /// <typeparam name="T">Тип возвращаемых объектов.</typeparam>
+        /// <param name="request">Запрос на получение объектов.</param>
+        /// <returns></returns>
+        IEnumerable<T> GetObjects<T>(ApiRequest<IEnumerable<T>> request)
+            where T : IApiObject;
+
+        /// <summary>
+        /// Возвращает типизированное стандартное сообщение ответа.
+        /// </summary>
+        /// <typeparam name="T">Тип результата.</typeparam>
+        /// <param name="request">Запрос на получение сообщения.</param>
+        /// <returns></returns>
+        ApiMessageResult<T> GetMessage<T>(ApiRequestMessage<T> request)
+            where T : new();
+
+        /// <summary>
         /// Возвращает типизованное значение результата
         /// из стандартного сообщения ответа.
         /// </summary>
         /// <typeparam name="T">Тип результата.</typeparam>
-        /// <param name="request"></param>
+        /// <param name="request">Запрос на получение сообщения.</param>
         /// <returns></returns>
-        T GetResponseResult<T>(IRestRequest request);
-
-        /// <summary>
-        /// Возвращает целочисленное значение результата
-        /// из стандартного сообщения ответа.
-        /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
-        int GetIntResponse(IRestRequest request);
+        T GetMessageResult<T>(ApiRequestMessage<T> request)
+            where T : new();
 
         /// <summary>
         /// Возвращает булево значение результата.
         /// из стандартного сообщения ответа.
         /// </summary>
-        /// <param name="request"></param>
+        /// <param name="request">Запрос на получение сообщения.</param>
         /// <returns></returns>
-        bool GetBoolResponse(IRestRequest request);
-
-        /// <summary>
-        /// Возвращает ответ в виде коллекции объектов.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="request"></param>
-        /// <returns></returns>
-        IEnumerable<T> GetResponseObjects<T>(IRestRequest request)
-            where T : IApiObject;
+        bool GetBoolResult(ApiRequestMessage<int> request);
     }
 }

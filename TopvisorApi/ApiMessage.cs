@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 namespace Topvisor.Api
 {
     /// <summary>
-    /// Ответ получаемый по Api.
+    /// Сообщение получаемое по Api.
     /// </summary>
-    public class ApiResponse
+    public class ApiMessage
     {
         [DeserializeAs(Name = "error")]
         public bool Error { get; set; }

@@ -47,11 +47,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ApiRequest.cs" />
     <Compile Include="ApiRequestBuilder.cs" />
     <Compile Include="ApiClient.cs" />
-    <Compile Include="ApiResponseResult.cs" />
+    <Compile Include="ApiMessageResult.cs" />
+    <Compile Include="ApiRequestMessage.cs" />
     <Compile Include="ClientConfig.cs" />
-    <Compile Include="ApiResponse.cs" />
+    <Compile Include="ApiMessage.cs" />
     <Compile Include="ApiKeyword.cs" />
     <Compile Include="ApiProject.cs" />
     <Compile Include="IApiClient.cs" />

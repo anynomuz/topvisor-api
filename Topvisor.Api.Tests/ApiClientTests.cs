@@ -12,8 +12,11 @@ namespace Topvisor.Api.Tests
         public void ThrowOnInvalidRequest1()
         {
             var client = ApiClientHelper.GetRealApiClient();
-            var request = new RestRequest(Method.GET);
-            client.GetResponseResult<string>(request);
+
+            var request = new ApiRequestMessage<object>(
+                new RestRequest(Method.GET));
+
+            client.GetMessageResult(request);
         }
 
         [TestMethod]
@@ -24,9 +27,9 @@ namespace Topvisor.Api.Tests
 
             var builder = new ApiRequestBuilder();
             var request = builder.GetProjectsRequest();
-            request.Parameters[1].Name = "invalid-fake-param";
+            request.Request.Parameters[1].Name = "invalid-fake-param";
             
-            var res = client.GetResponseObjects<ApiProject>(request);
+            var res = client.GetObjects<ApiProject>(request);
         }
     }
 }

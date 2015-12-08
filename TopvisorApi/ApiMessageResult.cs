@@ -8,10 +8,10 @@ using System.Threading.Tasks;
 namespace Topvisor.Api
 {
     /// <summary>
-    /// Ответ получаемый по Api c типизированным результатом.
+    /// Сообщение получаемое по Api c типизированным результатом.
     /// </summary>
     /// <typeparam name="T">Тип результата.</typeparam>
-    public class ApiResponseResult<T> : ApiResponse
+    public class ApiMessageResult<T> : ApiMessage
     {
         [DeserializeAs(Name = "result")]
         public T Result { get; set; }

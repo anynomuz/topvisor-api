@@ -9,23 +9,25 @@ namespace Topvisor.Api.Tests
 {
     public class MockApiClient : IApiClient
     {
-        public T GetResponseResult<T>(IRestRequest request)
-        {
-            throw new NotImplementedException();
-        }
-
-        public int GetIntResponse(IRestRequest request)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool GetBoolResponse(IRestRequest request)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IEnumerable<T> GetResponseObjects<T>(IRestRequest request)
+        public IEnumerable<T> GetObjects<T>(ApiRequest<IEnumerable<T>> request)
             where T : IApiObject
+        {
+            throw new NotImplementedException();
+        }
+
+        public ApiMessageResult<T> GetMessage<T>(ApiRequestMessage<T> request)
+            where T : new()
+        {
+            throw new NotImplementedException();
+        }
+
+        public T GetMessageResult<T>(ApiRequestMessage<T> request)
+            where T : new()
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool GetBoolResult(ApiRequestMessage<int> request)
         {
             throw new NotImplementedException();
         }
