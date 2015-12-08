@@ -77,5 +77,37 @@ namespace Topvisor.Xml
                 Save(stream);
             }
         }
+
+        /// <summary>
+        /// Валидировать реестр.
+        /// </summary>
+        /// <param name="registry"></param>
+        public static void ValidateRegistry(XmlRegistry registry)
+        {
+            foreach (var proj in registry.Projects)
+            {
+                ValidateUrl(proj.Site);
+
+                foreach (var group in proj.KeywordGroups)
+                {
+                    foreach (var keyword in group.Keywords)
+                    {
+                        if (!string.IsNullOrEmpty(keyword.TargetUrl))
+                        {
+                            ValidateUrl(keyword.TargetUrl);
+                        }
+                    }
+                }
+            }
+        }
+
+        private static void ValidateUrl(string url)
+        {
+            if (!Uri.IsWellFormedUriString(url, UriKind.Absolute))
+            {
+                var error = string.Format("Invalid Url string = '{0}'.", url);
+                throw new InvalidCastException(error);
+            }
+        }
     }
 }

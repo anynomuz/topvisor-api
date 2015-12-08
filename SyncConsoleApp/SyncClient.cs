@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Topvisor.Api;
 using Topvisor.Xml;
 
-namespace SyncConsoleApp
+namespace SyncAppConsole
 {
     /// <summary>
     /// Клиент для выполнения синхронизации.
@@ -356,7 +356,7 @@ namespace SyncConsoleApp
                 if (addKeywords.Count > 0)
                 {
                     var request = _requestBuilder.GetAddKeywordsRequest(
-                        apiGroup.ProjectId, apiGroup.Id, addKeywords.Select(p => p.Phrase));
+                        apiGroup.ProjectId, addKeywords.Select(p => p.Phrase), apiGroup.Id);
 
                     var res = _client.GetResponseResult<List<int>>(request);
 
@@ -376,7 +376,7 @@ namespace SyncConsoleApp
                 foreach (var word in addKeywords)
                 {
                     var request = _requestBuilder.GetAddKeywordRequest(
-                        apiGroup.ProjectId, apiGroup.Id, word.Phrase);
+                        apiGroup.ProjectId, word.Phrase, apiGroup.Id);
 
                     var phraseId = _client.GetIntResponse(request);
                     var keyword = apiGroup.AddKeyword(word.Phrase);
@@ -403,10 +403,11 @@ namespace SyncConsoleApp
             foreach (var groupPair in syncGroupPair)
             {
                 var dropWords = SyncHelper.GetItemsForDelete(
-                    groupPair.Item1.Keywords,
-                    groupPair.Item2.Keywords,
-                    w => GetPhraseKey(w.Phrase),
-                    w => GetPhraseKey(w.Phrase));
+                        groupPair.Item1.Keywords,
+                        groupPair.Item2.Keywords,
+                        w => GetPhraseKey(w.Phrase),
+                        w => GetPhraseKey(w.Phrase))
+                    .ToList();
 
                 foreach (var word in dropWords)
                 {
@@ -511,6 +512,11 @@ namespace SyncConsoleApp
 
         private static string GetSiteKey(string site)
         {
+            if (string.IsNullOrEmpty(site))
+            {
+                return string.Empty;
+            }
+
             return site.Trim().TrimEnd('/', '.').ToUpper()
                 .Replace("HTTP://", "").Replace("HTTPS://", "");
         }

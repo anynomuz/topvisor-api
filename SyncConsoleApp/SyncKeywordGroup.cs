@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Topvisor.Api;
 
-namespace SyncConsoleApp
+namespace SyncAppConsole
 {
     /// <summary>
     /// Группа фраз для задач синхронизации.

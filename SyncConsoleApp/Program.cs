@@ -5,50 +5,71 @@ using System.IO;
 using Topvisor.Api;
 using Topvisor.Xml;
 
-namespace SyncConsoleApp
+namespace SyncAppConsole
 {
     public class Program
     {
-        private const string FileName = "registry.xml";
+        private const string FileName = "topvisor-proj.xml";
 
         static void Main(string[] args)
         {
-            if (!File.Exists(FileName))
+            try
             {
-                var newRegistry = GenTestRegistry(3);
-                newRegistry.Save(FileName);
+                if (!File.Exists(FileName))
+                {
+                    var newRegistry = ProjectGenerator.GenRegistry(3, 10);
+                    newRegistry.Save(FileName);
+                }
+
+                var registry = XmlRegistry.Load(FileName);
+
+                // Валидация реестра, в первую очередь урлы в проектах и словах
+                XmlRegistry.ValidateRegistry(registry);
+
+                //------
+
+                var apiKey = ConfigurationManager.AppSettings["apikey"];
+                if (string.IsNullOrEmpty(apiKey))
+                {
+                    throw new InvalidOperationException(
+                        "Invalid 'apikey' setting in application config.");
+                }
+
+                var config = new ClientConfig(apiKey);
+                var client = new ApiClient(config);
+
+                var syncClient = new SyncClient(client);
+
+                Console.Write("Project's data loading...");
+                syncClient.LoadSyncObjects();
+
+                Console.WriteLine();
+                Console.Write("Project's synchronization...");
+                syncClient.SyncProjects(registry.Projects);
+
+                Console.WriteLine();
+                Console.Write("Groups's synchronization...");
+                syncClient.SyncGroups(registry.Projects);
+
+                Console.WriteLine();
+                Console.Write("Keywords's synchronization...");
+                syncClient.SyncKeywords(registry.Projects);
+
+                Console.WriteLine();
+                Console.Write("Synchronization complited, press any key...");
+                Console.ReadKey();
             }
-
-            var registry = XmlRegistry.Load(FileName);
-
-#warning Отвалидировать урлы в проектах и словах
-
-            var apiKey = ConfigurationManager.AppSettings["apikey"];
-            if (string.IsNullOrEmpty(apiKey))
+            catch (Exception ex)
             {
-                throw new InvalidOperationException(
-                    "Invalid 'apikey' setting in app.config.");
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine();
+                Console.WriteLine("Error:");
+                Console.WriteLine(ex.ToString());
+                Console.ResetColor();
+
+                Console.Write("Press any key...");
+                Console.ReadKey();
             }
-
-            //------
-
-            var config = new ClientConfig(apiKey);
-            var client = new ApiClient(config);
-
-            var syncClient = new SyncClient(client);
-            syncClient.LoadSyncObjects();
-
-            syncClient.SyncProjects(registry.Projects);
-            syncClient.SyncGroups(registry.Projects);
-            syncClient.SyncKeywords(registry.Projects);
-
-        }
-
-        private static XmlRegistry GenTestRegistry(int projectsCount)
-        {
-            var gen = new ProjectGenerator();
-            var projects = gen.CreateProjects(projectsCount, 10);
-            return new XmlRegistry(projects);
         }
     }
 }

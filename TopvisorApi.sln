@@ -5,9 +5,15 @@ VisualStudioVersion = 12.0.40629.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Topvisor.Api", "TopvisorApi\Topvisor.Api.csproj", "{D84AA33E-5BA3-43EF-9AF7-D8B22F01E6B4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SyncConsoleApp", "SyncConsoleApp\SyncConsoleApp.csproj", "{CCD7AA7A-AD53-47E9-AB62-03ADE3D10079}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SyncAppConsole", "SyncConsoleApp\SyncAppConsole.csproj", "{CCD7AA7A-AD53-47E9-AB62-03ADE3D10079}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Topvisor.Xml", "TopvisorXml\Topvisor.Xml.csproj", "{EC67A31D-9CCB-44FF-8B10-8D44D124B733}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Topvisor.Api.Tests", "Topvisor.Api.Tests\Topvisor.Api.Tests.csproj", "{D525FCD8-ECAB-4463-A4A7-10F41C39EA99}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Topvisor.Xml.Tests", "Topvisor.Xml.Tests\Topvisor.Xml.Tests.csproj", "{4CED618C-3340-4999-BF67-AB9976EC4AEC}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UnitTests", "UnitTests", "{C7B981A7-7B66-4C48-A64E-6011DBB2A4D2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,8 +33,20 @@ Global
 		{EC67A31D-9CCB-44FF-8B10-8D44D124B733}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EC67A31D-9CCB-44FF-8B10-8D44D124B733}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EC67A31D-9CCB-44FF-8B10-8D44D124B733}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D525FCD8-ECAB-4463-A4A7-10F41C39EA99}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D525FCD8-ECAB-4463-A4A7-10F41C39EA99}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D525FCD8-ECAB-4463-A4A7-10F41C39EA99}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D525FCD8-ECAB-4463-A4A7-10F41C39EA99}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4CED618C-3340-4999-BF67-AB9976EC4AEC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4CED618C-3340-4999-BF67-AB9976EC4AEC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4CED618C-3340-4999-BF67-AB9976EC4AEC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4CED618C-3340-4999-BF67-AB9976EC4AEC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{D525FCD8-ECAB-4463-A4A7-10F41C39EA99} = {C7B981A7-7B66-4C48-A64E-6011DBB2A4D2}
+		{4CED618C-3340-4999-BF67-AB9976EC4AEC} = {C7B981A7-7B66-4C48-A64E-6011DBB2A4D2}
 	EndGlobalSection
 EndGlobal

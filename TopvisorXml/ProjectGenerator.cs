@@ -19,6 +19,13 @@ namespace Topvisor.Xml
             _random = new Random(Environment.TickCount);
         }
 
+        public static XmlRegistry GenRegistry(int projectsCount, int maxPhrases)
+        {
+            var gen = new ProjectGenerator();
+            var projects = gen.CreateProjects(projectsCount, maxPhrases);
+            return new XmlRegistry(projects);
+        }
+
         public IEnumerable<XmlProject> CreateProjects(int count, int maxPhrasesCount)
         {
             for (int i = 0; i < count; ++i)

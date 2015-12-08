@@ -7,7 +7,7 @@
     <ProjectGuid>{CCD7AA7A-AD53-47E9-AB62-03ADE3D10079}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SyncConsoleApp</RootNamespace>
+    <RootNamespace>SyncAppConsole</RootNamespace>
     <AssemblyName>SyncConsoleApp</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>

@@ -6,13 +6,24 @@ using System.Threading.Tasks;
 using RestSharp;
 using Topvisor.Api;
 
-namespace SyncConsoleApp
+namespace SyncAppConsole
 {
     /// <summary>
     /// Вспомогательные методы синхронизации.
     /// </summary>
     public class SyncHelper
     {
+        /// <summary>
+        /// Возвращает пары соответсвующих обеъктов для обновления.
+        /// </summary>
+        /// <typeparam name="T1"></typeparam>
+        /// <typeparam name="T2"></typeparam>
+        /// <typeparam name="K"></typeparam>
+        /// <param name="newItems"></param>
+        /// <param name="oldItems"></param>
+        /// <param name="newKeySelector"></param>
+        /// <param name="oldKeySelector"></param>
+        /// <returns></returns>
         public static IEnumerable<Tuple<T1, T2>> GetItemsForUpdate<T1, T2, K>(
             IEnumerable<T1> newItems,
             IEnumerable<T2> oldItems,
@@ -26,6 +37,18 @@ namespace SyncConsoleApp
                 (t1, t2) => new Tuple<T1, T2>(t1, t2));
         }
 
+        /// <summary>
+        /// Возвращает набор новых элементов,
+        /// которые отсутсвуют в коллекции старых элементов.
+        /// </summary>
+        /// <typeparam name="T1"></typeparam>
+        /// <typeparam name="T2"></typeparam>
+        /// <typeparam name="K"></typeparam>
+        /// <param name="newItems"></param>
+        /// <param name="oldItems"></param>
+        /// <param name="newKeySelector"></param>
+        /// <param name="oldKeySelector"></param>
+        /// <returns></returns>
         public static IEnumerable<T1> GetItemsForCreate<T1, T2, K>(
             IEnumerable<T1> newItems,
             IEnumerable<T2> oldItems,
@@ -35,6 +58,10 @@ namespace SyncConsoleApp
             return SubtractSets(newItems, oldItems, newKeySelector, oldKeySelector);
         }
 
+        /// <summary>
+        /// Возвращает набор старых элементов,
+        /// которые отсутсвуют в коллекции новых элементов.
+        /// </summary>
         public static IEnumerable<T2> GetItemsForDelete<T1, T2, K>(
             IEnumerable<T1> newItems,
             IEnumerable<T2> oldItems,

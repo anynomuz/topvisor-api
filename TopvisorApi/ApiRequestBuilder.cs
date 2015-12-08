@@ -10,6 +10,9 @@ namespace Topvisor.Api
     /// <summary>
     /// Построитель запросов к api.
     /// </summary>
+    /// <remarks>
+    /// Форматы запросов в документации: https://topvisor.ru/api
+    /// </remarks>
     public class ApiRequestBuilder
     {
         public ApiRequestBuilder()
@@ -89,7 +92,7 @@ namespace Topvisor.Api
         }
 
         public IRestRequest GetAddKeywordRequest(
-            int projectId, int groupId, string phrase)
+            int projectId, string phrase, int groupId = -1)
         {
             var request = new RestRequest(Method.GET);
             request.AddParameter("module", "mod_keywords");
@@ -104,7 +107,7 @@ namespace Topvisor.Api
         }
 
         public IRestRequest GetAddKeywordsRequest(
-            int projectId, int groupId, IEnumerable<string> phrases)
+            int projectId, IEnumerable<string> phrases, int groupId = -1)
         {
             var request = new RestRequest(Method.POST);
             request.AddParameter("module", "mod_keywords", ParameterType.QueryString);

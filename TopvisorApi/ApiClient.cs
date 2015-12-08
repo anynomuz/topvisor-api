@@ -129,7 +129,7 @@ namespace Topvisor.Api
         {
             if (response.ErrorException != null)
             {
-                throw new ApplicationException(
+                throw new InvalidOperationException(
                     "Error retrieving response. Check inner details for more info.",
                     response.ErrorException);
             }
@@ -140,12 +140,15 @@ namespace Topvisor.Api
 
         private ApiResponse TryGetResponseMessage<T>(IRestResponse<T> response)
         {
-            if ((response.Data == null) && (response.StatusCode == HttpStatusCode.OK))
+            try
             {
                 return _deserailizer.Deserialize<ApiResponse>(response);
             }
-
-            return response.Data as ApiResponse;
+            catch (Exception)
+            {
+                // некрасиво, но куда деваться..
+                return response.Data as ApiResponse;
+            }
         }
 
         private static void ThrowIfError(ApiResponse apiResponse)
@@ -156,7 +159,7 @@ namespace Topvisor.Api
                     ? "Unknown error response."
                     : apiResponse.Message;
 
-                throw new ApplicationException(error);
+                throw new InvalidOperationException(error);
             }
         }
     }
