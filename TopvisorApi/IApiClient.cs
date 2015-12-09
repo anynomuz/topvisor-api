@@ -20,9 +20,12 @@ namespace Topvisor.Api
         /// </summary>
         /// <typeparam name="T">Тип результата.</typeparam>
         /// <param name="request">Запрос на получение сообщения.</param>
+        /// <param name="throwIfErrorMessage">
+        /// Генерировать ли исключение при ошибке в сообщении.
+        /// </param>
         /// <returns></returns>
-        ApiMessageResult<T> GetMessage<T>(ApiRequestMessage<T> request)
-            where T : new();
+        ApiMessageResult<T> GetMessage<T>(
+            ApiRequestMessage<T> request, bool throwIfErrorMessage = true);
 
         /// <summary>
         /// Возвращает типизованное значение результата
@@ -31,8 +34,7 @@ namespace Topvisor.Api
         /// <typeparam name="T">Тип результата.</typeparam>
         /// <param name="request">Запрос на получение сообщения.</param>
         /// <returns></returns>
-        T GetMessageResult<T>(ApiRequestMessage<T> request)
-            where T : new();
+        T GetMessageResult<T>(ApiRequestMessage<T> request);
 
         /// <summary>
         /// Возвращает булево значение результата.

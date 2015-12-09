@@ -1,0 +1,61 @@
+<?xml version="1.0"?>
+<ProjectRegistry xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Projects>
+    <Project>
+      <Site>http://project0.com</Site>
+      <Enabled>true</Enabled>
+      <KeywordGroups>
+        <Group Name="Default" Enabled="true">
+          <Keyword>
+            <Phrase>proj0 keyword1540663454</Phrase>
+            <TargetUrl />
+          </Keyword>
+          <Keyword>
+            <Phrase>proj0 keyword1884840054</Phrase>
+            <TargetUrl>http://project0.com/proj0_keyword1884840054</TargetUrl>
+          </Keyword>
+        </Group>
+      </KeywordGroups>
+    </Project>
+    <Project>
+      <Site>http://project1.com</Site>
+      <Enabled>true</Enabled>
+      <KeywordGroups>
+        <Group Name="Default" Enabled="true">
+          <Keyword>
+            <Phrase>proj1 keyword864931842</Phrase>
+            <TargetUrl />
+          </Keyword>
+          <Keyword>
+            <Phrase>proj1 keyword1282133339</Phrase>
+            <TargetUrl />
+          </Keyword>
+          <Keyword>
+            <Phrase>proj1 keyword268187923</Phrase>
+            <TargetUrl />
+          </Keyword>
+          <Keyword>
+            <Phrase>proj1 keyword1727139249</Phrase>
+            <TargetUrl>http://project1.com/proj1_keyword1727139249</TargetUrl>
+          </Keyword>
+          <Keyword>
+            <Phrase>proj1 keyword1263837318</Phrase>
+            <TargetUrl />
+          </Keyword>
+        </Group>
+      </KeywordGroups>
+    </Project>
+    <Project>
+      <Site>http://project2.com</Site>
+      <Enabled>true</Enabled>
+      <KeywordGroups>
+        <Group Name="Default" Enabled="true">
+          <Keyword>
+            <Phrase>proj2 keyword307474341</Phrase>
+            <TargetUrl />
+          </Keyword>
+        </Group>
+      </KeywordGroups>
+    </Project>
+  </Projects>
+</ProjectRegistry>

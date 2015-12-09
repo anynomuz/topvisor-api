@@ -34,6 +34,27 @@ namespace SyncAppConsole
             _requestBuilder = new ApiRequestBuilder();
         }
 
+        public static string GetSiteKey(string site)
+        {
+            if (string.IsNullOrEmpty(site))
+            {
+                return string.Empty;
+            }
+
+            return site.Trim().TrimEnd('/', '.').ToUpper()
+                .Replace("HTTP://", "").Replace("HTTPS://", "");
+        }
+
+        public static string GetGroupNameKey(string groupName)
+        {
+            return groupName.Trim().ToUpper();
+        }
+
+        public static string GetPhraseKey(string phrase)
+        {
+            return phrase.Trim().ToUpper();
+        }
+
         /// <summary>
         /// Загружает синхронизируемые объекты.
         /// </summary>
@@ -131,6 +152,7 @@ namespace SyncAppConsole
 
                 if (res)
                 {
+                    _apiGroups.RemoveAll(g => g.ProjectId == proj.Id);
                     _apiProjects.Remove(proj);
                     ++counter;
                 }
@@ -456,14 +478,9 @@ namespace SyncAppConsole
 
                         var res = _client.GetBoolResult(request);
 
-                        ////if (res)
-                        ////{
-
-                        // BUG: При установке таргета возвращает всегда false
+                        // BUG: При установке таргета результат возвращает всегда false
                         apiKeyword.Target = wordPair.Item1.TargetUrl;
                         ++counter;
-
-                        ////}
                     }
                 }
             }
@@ -511,27 +528,6 @@ namespace SyncAppConsole
                 yield return new SyncObject<XmlKeywordGroup, SyncKeywordGroup>(
                     pair.Item2.Id, pair.Item1.KeywordGroups, projectGroups);
             }
-        }
-
-        private static string GetSiteKey(string site)
-        {
-            if (string.IsNullOrEmpty(site))
-            {
-                return string.Empty;
-            }
-
-            return site.Trim().TrimEnd('/', '.').ToUpper()
-                .Replace("HTTP://", "").Replace("HTTPS://", "");
-        }
-
-        private static string GetGroupNameKey(string groupName)
-        {
-            return groupName.Trim().ToUpper();
-        }
-
-        private static string GetPhraseKey(string phrase)
-        {
-            return phrase.Trim().ToUpper();
         }
 
         private class SyncObject<T1, T2>

@@ -49,10 +49,14 @@ namespace Topvisor.Api
             WaitBeforeRequestIfNeeded();
             var response = _client.Execute<List<T>>(request.Request);
 
-            ThrowIfError(response);
+            ThrowIfErrorResponse(response);
 
-            var apiResponse = TryGetMessage(response);
-            ThrowIfError(apiResponse);
+            var apiMessage = TryGetMessage(response);
+
+            if (apiMessage != null)
+            {
+                ThrowIfErrorMessage(apiMessage);
+            }
 
             var list = response.Data as IEnumerable<IValidable>;
 
@@ -72,14 +76,30 @@ namespace Topvisor.Api
         /// </summary>
         /// <typeparam name="T">Тип результата.</typeparam>
         /// <param name="request">Запрос на получение сообщения.</param>
+        /// <param name="throwIfErrorMessage">
+        /// Генерировать ли исключение при ошибке в сообщении.
+        /// </param>
         /// <returns></returns>
-        public ApiMessageResult<T> GetMessage<T>(ApiRequestMessage<T> request)
-            where T : new()
+        public ApiMessageResult<T> GetMessage<T>(
+            ApiRequestMessage<T> request, bool throwIfErrorMessage = true)
         {
             WaitBeforeRequestIfNeeded();
             var response = _client.Execute<ApiMessageResult<T>>(request.Request);
 
-            ThrowIfError(response);
+            ThrowIfErrorResponse(response);
+
+            if (response.Data == null)
+            {
+                throw new InvalidRequestException(
+                    "Error retrieving response. Invalid message.",
+                    response.Content);
+            }
+
+            if (throwIfErrorMessage)
+            {
+                ThrowIfErrorMessage(response.Data);
+            }
+
             return response.Data;
         }
 
@@ -91,7 +111,6 @@ namespace Topvisor.Api
         /// <param name="request">Запрос на получение сообщения.</param>
         /// <returns></returns>
         public T GetMessageResult<T>(ApiRequestMessage<T> request)
-            where T : new()
         {
             var message = GetMessage(request);
             return message.Result;
@@ -129,41 +148,46 @@ namespace Topvisor.Api
             }
         }
 
-        private static void ThrowIfError<T>(IRestResponse<T> response)
+        private static void ThrowIfErrorResponse<T>(IRestResponse<T> response)
         {
             if (response.ErrorException != null)
             {
-                throw new InvalidOperationException(
+                throw new InvalidRequestException(
                     "Error retrieving response. Check inner details for more info.",
-                    response.ErrorException);
+                    response.ErrorException,
+                    response.Content);
             }
-
-            var apiResponse = response.Data as ApiMessage;
-            ThrowIfError(apiResponse);
         }
 
         private ApiMessage TryGetMessage<T>(IRestResponse<T> response)
         {
+            var message = response.Data as ApiMessage;
+
+            if (message != null)
+            {
+                return message;
+            }
+
             try
             {
+                // некрасиво, но куда деваться..
                 return _deserailizer.Deserialize<ApiMessage>(response);
             }
             catch (Exception)
             {
-                // некрасиво, но куда деваться..
-                return response.Data as ApiMessage;
+                return null;
             }
         }
 
-        private static void ThrowIfError(ApiMessage apiResponse)
+        private static void ThrowIfErrorMessage(ApiMessage message)
         {
-            if ((apiResponse != null) && apiResponse.Error)
+            if (message.Error)
             {
-                var error = string.IsNullOrEmpty(apiResponse.Message)
+                var error = string.IsNullOrEmpty(message.Message)
                     ? "Unknown error response."
-                    : apiResponse.Message;
+                    : message.Message;
 
-                throw new InvalidOperationException(error);
+                throw new InvalidRequestException(error, string.Empty);
             }
         }
     }

@@ -23,7 +23,7 @@ namespace SyncAppConsole
 
                 var registry = XmlRegistry.Load(FileName);
 
-                // Валидация реестра, в первую очередь урлы в проектах и словах
+                // Валидация реестра - урлы в проектах и словах
                 XmlRegistry.ValidateRegistry(registry);
 
                 //------
@@ -56,7 +56,7 @@ namespace SyncAppConsole
                 syncClient.SyncKeywords(registry.Projects);
 
                 Console.WriteLine();
-                Console.Write("Synchronization complited, press any key...");
+                Console.Write("Synchronization completed, press any key...");
                 Console.ReadKey();
             }
             catch (Exception ex)

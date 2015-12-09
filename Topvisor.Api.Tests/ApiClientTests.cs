@@ -8,7 +8,20 @@ namespace Topvisor.Api.Tests
     public class ApiClientTests
     {
         [TestMethod]
-        [ExpectedException(typeof(InvalidOperationException))]
+        public void GetMessageOnInvalidRequest()
+        {
+            var client = ApiClientHelper.GetRealApiClient();
+
+            var request = new ApiRequestMessage<object>(
+                new RestRequest(Method.GET));
+
+            var message = client.GetMessage(request, false);
+
+            Assert.IsNotNull(message);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(InvalidRequestException))]
         public void ThrowOnInvalidRequest1()
         {
             var client = ApiClientHelper.GetRealApiClient();
@@ -16,11 +29,11 @@ namespace Topvisor.Api.Tests
             var request = new ApiRequestMessage<object>(
                 new RestRequest(Method.GET));
 
-            client.GetMessageResult(request);
+            client.GetMessage(request, true);
         }
 
         [TestMethod]
-        [ExpectedException(typeof(InvalidOperationException))]
+        [ExpectedException(typeof(InvalidRequestException))]
         public void ThrowOnInvalidRequest2()
         {
             var client = ApiClientHelper.GetRealApiClient();

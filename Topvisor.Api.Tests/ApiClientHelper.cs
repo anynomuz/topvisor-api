@@ -24,11 +24,6 @@ namespace Topvisor.Api.Tests
             return _realApiClient;
         }
 
-        public static MockApiClient GetMockApiClient()
-        {
-            return new MockApiClient();
-        }
-
         public static IEnumerable<ApiProject> GetProjects(bool onlyEnabled = true)
         {
             var client = ApiClientHelper.GetRealApiClient();

@@ -58,6 +58,7 @@
     <Compile Include="ApiProject.cs" />
     <Compile Include="IApiClient.cs" />
     <Compile Include="IApiObject.cs" />
+    <Compile Include="InvalidRequestException.cs" />
     <Compile Include="IValidable.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="DeserializedValidateHelper.cs" />

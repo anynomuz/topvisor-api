@@ -59,7 +59,6 @@
     <Compile Include="ApiRequestGroupsTests.cs" />
     <Compile Include="ApiRequestKeywordsTests.cs" />
     <Compile Include="ApiRequestProjectsTests.cs" />
-    <Compile Include="MockApiClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

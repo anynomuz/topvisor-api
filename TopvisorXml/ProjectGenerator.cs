@@ -38,16 +38,16 @@ namespace Topvisor.Xml
         {
             var proj = new XmlProject(string.Format("http://project{0}.com", id));
 
-            var group = new XmlKeywordGroup("defaultGroup");
+            var group = new XmlKeywordGroup("Default");
             proj.KeywordGroups.Add(group);
 
-            var baseWord = string.Format("proj{0}-{1}-{2}", id, group.Name, "keyword");
-            var words = GetWords(baseWord, _random.Next(maxPhrasesCount));
+            var baseWord = string.Format("proj{0} {1}", id, "keyword");
+            var wordCount = Math.Max(1, _random.Next(maxPhrasesCount));
 
-            foreach (var word in words)
+            foreach (var word in GetWords(baseWord, wordCount))
             {
                 var url = (_random.Next(3) == 0)
-                    ? string.Format("{0}/{1}", proj.Site, word)
+                    ? string.Format("{0}/{1}", proj.Site, word.Replace(' ', '_'))
                     : string.Empty;
 
                 var xmlKeyword = new XmlKeyword(word, url);
