@@ -40,7 +40,7 @@ namespace Topvisor.Api.Tests
 
             var keywords = GetKeywords(project.Id);
 
-            var newKeyword = keywords.First();
+            var newKeyword = keywords.First(k => k.Id == id);
 
             Assert.AreEqual(testPhrase, newKeyword.Phrase);
         }
